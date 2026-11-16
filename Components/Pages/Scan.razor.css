@@ -1,0 +1,111 @@
+﻿.scan-page {
+    width: 100%;
+}
+
+.page-header {
+    margin-bottom: 25px;
+}
+
+    .page-header h1 {
+        margin-bottom: 8px;
+        color: #1e293b;
+    }
+
+    .page-header p {
+        color: #64748b;
+        margin: 0;
+    }
+
+.scan-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 25px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+    .form-group label {
+        font-weight: 600;
+        color: #334155;
+    }
+
+.folder-input {
+    padding: 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+    .folder-input:focus {
+        outline: none;
+        border-color: #0d6efd;
+    }
+
+.scan-button {
+    margin-top: 15px;
+    background: #0d6efd;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 16px;
+    cursor: pointer;
+}
+
+    .scan-button:hover {
+        background: #0b5ed7;
+    }
+
+.result-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+
+.result-header {
+    margin-bottom: 15px;
+    font-size: 15px;
+    color: #334155;
+}
+
+.dll-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .dll-table th {
+        background: #f1f5f9;
+        text-align: left;
+        padding: 12px;
+        border-bottom: 1px solid #dbe2ea;
+    }
+
+    .dll-table td {
+        padding: 10px 12px;
+        border-bottom: 1px solid #eef2f7;
+    }
+
+    .dll-table tr:hover {
+        background-color: #f8fafc;
+    }
+
+.path-column {
+    font-family: Consolas, monospace;
+    font-size: 13px;
+}
+
+.dll-size {
+    text-align: right;
+    font-weight: 600;
+    color: #0d6efd;
+}
+
+.table-container {
+    overflow-x: auto;
+}

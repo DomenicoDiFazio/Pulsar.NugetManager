@@ -1,0 +1,110 @@
+﻿@page "/scan"
+
+@using Pulsar.NugetManager.Models
+@using Pulsar.NugetManager.Services.Interfaces
+
+@inject IDllScannerService DllScannerService
+
+@rendermode InteractiveServer
+
+<PageTitle>DLL Scanner</PageTitle>
+
+    <div class="scan-page">
+
+        <div class="page-header">
+            <h1>DLL Scanner</h1>
+            <p>
+                Analizza una cartella e visualizza le DLL trovate con
+                la relativa versione.
+            </p>
+        </div>
+
+        <div class="scan-card">
+
+            <div class="form-group">
+                <label>Cartella DLL</label>
+
+                <input class="folder-input"
+                       @bind="FolderPath" />
+            </div>
+
+            <button class="scan-button"
+                    @onclick="ScanAsync">
+                Scansiona
+            </button>
+
+        </div>
+    
+        @if (Dlls.Any())
+        {
+            <div class="result-card">
+
+                <div class="result-header">
+                    DLL trovate: <strong>@Dlls.Count</strong>
+                </div>
+
+                <div class="table-container">
+                    <table class="dll-table">
+
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Versione</th>
+                                <th>Dimensione</th>
+                                <th>Percorso</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+
+                            @foreach (var dll in Dlls)
+                            {
+                                <tr>
+                                    <td>@dll.Name</td>
+                                    <td>@dll.Version</td>
+                                    <td class="dll-size">
+                                        @FormatFileSize(dll.FileSize)
+                                    </td>
+                                    <td class="path-column"
+                                        title="@dll.FullPath">
+                                        @dll.FullPath
+                                    </td>
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+                </div>
+            </div>
+        }
+    </div>
+
+
+@code {
+
+    private string FolderPath = string.Empty;
+
+    private List<DllInfo> Dlls = [];
+
+    private async Task ScanAsync()
+    {
+        Dlls = await DllScannerService.ScanFolderAsync(FolderPath);
+    }
+
+    private string FormatFileSize(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB" };
+
+        double len = bytes;
+        int order = 0;
+
+        while (len >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            len /= 1024;
+        }
+
+        return $"{len:0.##} {sizes[order]}";
+    }
+}

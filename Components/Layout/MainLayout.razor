@@ -1,6 +1,35 @@
 ﻿@inherits LayoutComponentBase
 
-@Body
+<div class="layout-container">
+
+    <aside class="sidebar">
+
+        <div class="application-title">
+            Pulsar
+            <span>NuGet Manager</span>
+        </div>
+
+        <nav class="navigation-menu">
+
+            <a href="/" class="nav-item">
+                Home
+            </a>
+
+            <a href="/scan" class="nav-item">
+                DLL Scanner
+            </a>
+
+        </nav>
+
+    </aside>
+
+    <main class="content">
+
+        @Body
+
+    </main>
+
+</div>
 
 <div id="blazor-error-ui">
     An unhandled error has occurred.

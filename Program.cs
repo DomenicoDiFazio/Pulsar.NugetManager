@@ -1,10 +1,20 @@
 using Pulsar.NugetManager.Components;
+using Pulsar.NugetManager.Services;
+using Pulsar.NugetManager.Services.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddScoped<IDllScannerService, DllScannerService>();
+
+builder.Services.AddScoped<INugetPackageService, NugetPackageService>();
+
+builder.Services.AddScoped<IAzureDevOpsService, AzureDevOpsService>();
+
+builder.Services.AddScoped<ISolutionMigrationService, SolutionMigrationService>();
 
 var app = builder.Build();
 
