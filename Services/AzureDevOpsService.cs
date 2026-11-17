@@ -1,5 +1,6 @@
 ﻿using Pulsar.NugetManager.Models;
 using Pulsar.NugetManager.Services.Interfaces;
+using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -61,6 +62,14 @@ public class AzureDevOpsService : IAzureDevOpsService
 
         var response = await client.GetAsync(url);
 
+        var content = await response.Content.ReadAsStringAsync();
+
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new Exception(
+                $"HTTP {(int)response.StatusCode}\n\n{content}");
+        }
+
         response.EnsureSuccessStatusCode();
 
         var json =
@@ -75,5 +84,44 @@ public class AzureDevOpsService : IAzureDevOpsService
                 });
 
         return result?.Value ?? [];
+    }
+
+    public async Task PublishPackageAsync(
+    string packagePath,
+    string feedName)
+    {
+        var settings = await GetSettingsAsync();
+
+        var feedUrl =
+            $"https://pkgs.dev.azure.com/{settings.Organization}" +
+            $"/_packaging/{feedName}" +
+            $"/nuget/v3/index.json";
+
+        var process = new Process();
+
+        process.StartInfo.FileName = "dotnet";
+
+        process.StartInfo.Arguments =
+            $"nuget push \"{packagePath}\" " +
+            $"--source \"{feedUrl}\" " +
+            $"--api-key az";
+
+        process.StartInfo.RedirectStandardOutput = true;
+
+        process.StartInfo.RedirectStandardError = true;
+
+        process.StartInfo.UseShellExecute = false;
+
+        process.Start();
+
+        await process.WaitForExitAsync();
+
+        if (process.ExitCode != 0)
+        {
+            var error =
+                await process.StandardError.ReadToEndAsync();
+
+            throw new Exception(error);
+        }
     }
 }

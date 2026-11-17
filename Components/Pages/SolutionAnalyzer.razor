@@ -1,0 +1,96 @@
+﻿@page "/solution-analyzer"
+
+@using Pulsar.NugetManager.Models
+@using Pulsar.NugetManager.Services.Interfaces
+
+@inject ISolutionMigrationService SolutionMigrationService
+
+@rendermode InteractiveServer
+
+<PageTitle>Solution Analyzer</PageTitle>
+
+<div class="analyzer-page">
+
+    <div class="page-header">
+
+        <h1>Solution Analyzer</h1>
+
+        <p>
+            Analizza una solution Visual Studio e individua
+            i riferimenti DLL presenti nei progetti.
+        </p>
+
+    </div>
+
+    <div class="config-card">
+
+        <div class="form-group">
+
+            <label>Solution Path</label>
+
+            <input class="form-input"
+                   @bind="SolutionPath" />
+
+        </div>
+
+        <button class="analyze-button"
+                @onclick="AnalyzeAsync">
+            Analizza
+        </button>
+
+    </div>
+
+    @if (References.Any())
+    {
+        <div class="result-card">
+
+            <div class="result-header">
+                Riferimenti trovati:
+                <strong>@References.Count</strong>
+            </div>
+
+            <table class="result-table">
+
+                <thead>
+                    <tr>
+                        <th>Progetto</th>
+                        <th>Riferimento</th>
+                        <th>HintPath</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @foreach (var reference in References)
+                    {
+                        <tr>
+                            <td>@reference.ProjectName</td>
+                            <td>@reference.ReferenceName</td>
+                            <td>@reference.ReferencePath</td>
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+    }
+
+</div>
+
+@code {
+
+    private string SolutionPath = string.Empty;
+
+    private List<ProjectReferenceInfo> References = [];
+
+    private async Task AnalyzeAsync()
+    {
+        References =
+            await SolutionMigrationService
+            .AnalyzeSolutionAsync(
+                SolutionPath);
+    }
+
+}

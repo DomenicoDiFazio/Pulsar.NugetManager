@@ -1,0 +1,228 @@
+﻿@page "/package-upload"
+
+@using Pulsar.NugetManager.Models
+@using Pulsar.NugetManager.Services.Interfaces
+
+@inject IAzureDevOpsService AzureDevOpsService
+
+@rendermode InteractiveServer
+
+<PageTitle>Package Upload</PageTitle>
+
+<div class="upload-page">
+
+    <div class="page-header">
+        <h1>Package Upload</h1>
+        <p>
+            Seleziona una cartella contenente file .nupkg e pubblicali
+            in un feed Azure Artifacts.
+        </p>
+    </div>
+
+    <div class="upload-card">
+
+        <div class="form-group">
+            <label>Cartella Pacchetti</label>
+
+            <input class="form-input"
+                   @bind="PackagesFolder" />
+        </div>
+
+        <button class="load-button"
+                @onclick="LoadPackagesAsync">
+            Carica Pacchetti
+        </button>
+
+    </div>
+
+    @if (Feeds.Any())
+    {
+        <div class="feed-card">
+            <div class="form-group">
+                <label>Feed Azure Artifacts</label>
+
+                <select class="feed-select"
+                        @bind="SelectedFeed">
+
+                    @foreach (var feed in Feeds)
+                    {
+                        <option value="@feed.Name">
+                            @feed.Name
+                        </option>
+                    }
+
+                </select>
+            </div>
+        </div>
+    }
+
+    @if (Packages.Any())
+    {
+        <div class="result-card">
+
+            <div class="result-header">
+                Pacchetti trovati: <strong>@Packages.Count</strong>
+            </div>
+
+            <table class="packages-table">
+
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Pacchetto</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @foreach (var package in Packages)
+                    {
+                        <tr>
+
+                            <td>
+                                <input type="checkbox"
+                                       @bind="package.Selected" />
+                            </td>
+
+                            <td>
+                                @package.FileName
+                            </td>
+
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+            <div class="actions">
+
+                <button class="publish-button"
+                        @onclick="PublishPackagesAsync">
+                    Pubblica
+                </button>
+
+            </div>
+
+        </div>
+    }
+
+    @if (Results.Any())
+    {
+        <div class="result-card">
+
+            <h3>Risultati Upload</h3>
+
+            <table class="packages-table">
+
+                <thead>
+                    <tr>
+                        <th>Pacchetto</th>
+                        <th>Esito</th>
+                        <th>Messaggio</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @foreach (var result in Results)
+                    {
+                        <tr>
+                            <td>@result.PackageName</td>
+
+                            <td>
+                                @(result.Success ? "OK" : "KO")
+                            </td>
+
+                            <td>
+                                @(result.Success
+                                                        ? "Caricato correttamente"
+                                                        : result.ErrorMessage)
+                    </td>
+                </tr>
+                                }
+
+                </tbody>
+
+            </table>
+
+        </div>
+    }
+
+</div>
+
+@code {
+
+    private string PackagesFolder = string.Empty;
+
+    private string SelectedFeed = string.Empty;
+
+    private List<AzureFeedInfo> Feeds = [];
+
+    private List<NugetPackageFile> Packages = [];
+
+    private List<PackageCreationResult> Results = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        Feeds = await AzureDevOpsService.GetFeedsAsync();
+
+        if (Feeds.Any())
+        {
+            SelectedFeed = Feeds.First().Name;
+        }
+    }
+
+    private Task LoadPackagesAsync()
+    {
+        Packages.Clear();
+
+        if (!Directory.Exists(PackagesFolder))
+        {
+            return Task.CompletedTask;
+        }
+
+        Packages = Directory
+            .GetFiles(PackagesFolder, "*.nupkg")
+            .Select(x => new NugetPackageFile
+            {
+                FileName = Path.GetFileName(x),
+                FullPath = x,
+                Selected = true
+            })
+            .ToList();
+
+        return Task.CompletedTask;
+    }
+
+    private async Task PublishPackagesAsync()
+    {
+        Results.Clear();
+
+        foreach (var package in Packages.Where(x => x.Selected))
+        {
+            try
+            {
+                await AzureDevOpsService.PublishPackageAsync(
+                    package.FullPath,
+                    SelectedFeed);
+
+                Results.Add(new PackageCreationResult
+                {
+                    PackageName = package.FileName,
+                    Success = true
+                });
+            }
+            catch (Exception ex)
+            {
+                Results.Add(new PackageCreationResult
+                {
+                    PackageName = package.FileName,
+                    Success = false,
+                    ErrorMessage = ex.Message
+                });
+            }
+        }
+    }
+
+}

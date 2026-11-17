@@ -9,4 +9,6 @@ public interface IAzureDevOpsService
     Task SaveSettingsAsync(AzureDevOpsSettings settings);
 
     Task<List<AzureFeedInfo>> GetFeedsAsync();
+
+    Task PublishPackageAsync(string packagePath, string feedName);
 }

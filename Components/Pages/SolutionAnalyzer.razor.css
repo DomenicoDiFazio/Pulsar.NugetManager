@@ -1,0 +1,58 @@
+﻿.analyzer-page {
+    width: 100%;
+}
+
+.page-header {
+    margin-bottom: 25px;
+}
+
+.config-card,
+.result-card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+
+.form-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+}
+
+.analyze-button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.result-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .result-table th,
+    .result-table td {
+        text-align: left;
+        padding: 12px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .result-table th {
+        background: #f8fafc;
+    }
