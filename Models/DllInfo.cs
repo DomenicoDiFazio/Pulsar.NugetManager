@@ -9,4 +9,8 @@ public class DllInfo
     public string FullPath { get; set; } = string.Empty;
 
     public long FileSize { get; set; }
+
+    public bool Selected { get; set; } = true;
+
+    public string TargetFramework { get; set; } = "unknown";
 }

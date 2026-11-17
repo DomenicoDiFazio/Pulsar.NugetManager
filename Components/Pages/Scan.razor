@@ -50,6 +50,7 @@
                             <tr>
                                 <th>Nome</th>
                                 <th>Versione</th>
+                                <th>Framework</th>
                                 <th>Dimensione</th>
                                 <th>Percorso</th>
                             </tr>
@@ -62,6 +63,7 @@
                                 <tr>
                                     <td>@dll.Name</td>
                                     <td>@dll.Version</td>
+                                    <td class="framework-badge">@dll.TargetFramework</td>
                                     <td class="dll-size">
                                         @FormatFileSize(dll.FileSize)
                                     </td>

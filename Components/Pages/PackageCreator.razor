@@ -1,0 +1,186 @@
+﻿@page "/package-create"
+
+@using Pulsar.NugetManager.Models
+@using Pulsar.NugetManager.Services.Interfaces
+
+@inject IDllScannerService DllScannerService
+@inject INugetPackageService NugetPackageService
+
+@rendermode InteractiveServer
+
+<PageTitle>Package Creator</PageTitle>
+
+<div class="package-page">
+
+    <div class="page-header">
+        <h1>NuGet Package Creator</h1>
+        <p>
+            Seleziona una cartella contenente DLL e prepara
+            i pacchetti NuGet da generare.
+        </p>
+    </div>
+
+    <div class="config-card">
+
+        <div class="form-group">
+            <label>Cartella DLL</label>
+
+            <input class="form-input"
+                   @bind="DllFolder" />
+        </div>
+
+        <div class="form-group">
+            <label>Cartella Output</label>
+
+            <input class="form-input"
+                   @bind="OutputFolder" />
+        </div>
+
+        <button class="action-button"
+                @onclick="LoadDllsAsync">
+            Carica DLL
+        </button>
+
+    </div>
+
+    @if (Dlls.Any())
+    {
+        <div class="result-card">
+
+            <div class="result-header">
+                DLL trovate: <strong>@Dlls.Count</strong>
+            </div>
+
+            <table class="dll-table">
+
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Nome</th>
+                        <th>Versione</th>
+                        <th>Dimensione</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @foreach (var dll in Dlls)
+                    {
+                        <tr>
+
+                            <td>
+                                <input type="checkbox"
+                                       @bind="dll.Selected" />
+                            </td>
+
+                            <td>
+                                @dll.Name
+                            </td>
+
+                            <td>
+                                @dll.Version
+                            </td>
+
+                            <td>
+                                @FormatFileSize(dll.FileSize)
+                            </td>
+
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+            <div class="actions">
+
+                <button class="generate-button" @onclick="GeneratePackagesAsync">
+                    Genera Pacchetti
+                </button>
+                @if (Results.Any())
+                {
+                    <div class="result-card mt-3">
+
+                        <h4>Risultati</h4>
+
+                        <table class="dll-table">
+
+                            <thead>
+                                <tr>
+                                    <th>Pacchetto</th>
+                                    <th>Esito</th>
+                                    <th>Messaggio</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                @foreach (var result in Results)
+                                {
+                                    <tr>
+                                        <td>@result.PackageName</td>
+
+                                        <td>
+                                            @(result.Success ? "OK" : "KO")
+                                        </td>
+
+                                        <td>
+                                            @(result.Success ? result.PackagePath: result.ErrorMessage)
+                                        </td>
+                                    </tr>
+                                }
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+                }
+
+            </div>
+
+        </div>
+    }
+
+</div>
+
+@code {
+
+    private string DllFolder = string.Empty;
+
+    private string OutputFolder = string.Empty;
+
+    private List<DllInfo> Dlls = [];
+
+    private List<PackageCreationResult> Results = [];
+
+    private async Task LoadDllsAsync()
+    {
+        Dlls = await DllScannerService.ScanFolderAsync(DllFolder);
+    }
+
+    private string FormatFileSize(long bytes)
+    {
+        string[] sizes = { "B", "KB", "MB", "GB" };
+
+        double len = bytes;
+
+        int order = 0;
+
+        while (len >= 1024 && order < sizes.Length - 1)
+        {
+            order++;
+            len /= 1024;
+        }
+
+        return $"{len:0.##} {sizes[order]}";
+    }
+
+    private async Task GeneratePackagesAsync()
+    {
+        Results = await NugetPackageService.CreatePackagesAsync(
+            Dlls,
+            OutputFolder);
+    }
+
+}
