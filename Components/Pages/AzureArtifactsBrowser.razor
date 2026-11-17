@@ -1,0 +1,88 @@
+﻿@page "/azure-artifacts"
+
+@using Pulsar.NugetManager.Models
+@using Pulsar.NugetManager.Services.Interfaces
+
+@inject IAzureDevOpsService AzureDevOpsService
+
+@rendermode InteractiveServer
+
+<PageTitle>Azure Artifacts</PageTitle>
+
+<div class="browser-page">
+
+    <div class="page-header">
+        <h1>Azure Artifacts Browser</h1>
+
+        <p>
+            Visualizza i feed disponibili su Azure DevOps.
+        </p>
+    </div>
+
+    <button class="load-button"
+            @onclick="LoadFeedsAsync">
+        Carica Feed
+    </button>
+
+    @if (!string.IsNullOrWhiteSpace(Error))
+    {
+        <div class="error-box">
+            @Error
+        </div>
+    }
+
+    @if (Feeds.Any())
+    {
+        <div class="result-card">
+
+            <table class="feeds-table">
+
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Id</th>
+                        <th>Descrizione</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @foreach (var feed in Feeds)
+                    {
+                        <tr>
+                            <td>@feed.Name</td>
+                            <td>@feed.Id</td>
+                            <td>@feed.Description</td>
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+    }
+
+</div>
+
+@code {
+
+    private List<AzureFeedInfo> Feeds = [];
+
+    private string Error = string.Empty;
+
+    private async Task LoadFeedsAsync()
+    {
+        try
+        {
+            Error = string.Empty;
+
+            Feeds = await AzureDevOpsService.GetFeedsAsync();
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+    }
+
+}
