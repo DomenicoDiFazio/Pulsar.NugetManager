@@ -95,11 +95,6 @@
         background-color: #f8fafc;
     }
 
-.path-column {
-    font-family: Consolas, monospace;
-    font-size: 13px;
-}
-
 .dll-size {
     text-align: right;
     font-weight: 600;
