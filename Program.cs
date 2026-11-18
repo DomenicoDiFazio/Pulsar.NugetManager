@@ -1,6 +1,7 @@
 using Pulsar.NugetManager.Components;
 using Pulsar.NugetManager.Services;
 using Pulsar.NugetManager.Services.Interfaces;
+using NLog.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,12 @@ builder.Services.AddScoped<INugetPackageService, NugetPackageService>();
 builder.Services.AddScoped<IAzureDevOpsService, AzureDevOpsService>();
 
 builder.Services.AddScoped<ISolutionMigrationService, SolutionMigrationService>();
+
+builder.Services.AddSingleton<ILoggingService, LoggingService>();
+
+builder.Logging.ClearProviders();
+
+builder.Host.UseNLog();
 
 var app = builder.Build();
 

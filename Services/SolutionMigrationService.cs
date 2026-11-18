@@ -7,9 +7,18 @@ namespace Pulsar.NugetManager.Services;
 
 public class SolutionMigrationService : ISolutionMigrationService
 {
-    public async Task<List<ProjectReferenceInfo>> AnalyzeSolutionAsync(
-        string solutionPath)
+    private readonly ILoggingService _logger;
+
+    public SolutionMigrationService(ILoggingService logger)
     {
+        _logger = logger;
+    }
+
+    public async Task<List<ProjectReferenceInfo>> AnalyzeSolutionAsync(string solutionPath)
+    {
+
+        _logger.Info($"Analyzing solution folder: {solutionPath}");
+
         var results = new List<ProjectReferenceInfo>();
 
         string solutionFile;
@@ -195,6 +204,9 @@ public class SolutionMigrationService : ISolutionMigrationService
 
             try
             {
+                
+                _logger.Info($"Migrating project: {projectPath}");
+
                 var backupFolder =
                     Path.Combine(
                         Path.GetDirectoryName(projectPath)!,
@@ -227,6 +239,8 @@ public class SolutionMigrationService : ISolutionMigrationService
 
                 document.Save(projectPath);
 
+                _logger.Info($"Migration completed: {projectPath}");
+
                 foreach (var item in project)
                 {
                     results.Add(
@@ -250,6 +264,9 @@ public class SolutionMigrationService : ISolutionMigrationService
             }
             catch (Exception ex)
             {
+
+                _logger.Error($"Migration failed: {projectPath}", ex);
+
                 foreach (var item in project)
                 {
                     results.Add(

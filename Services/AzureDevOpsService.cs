@@ -16,6 +16,14 @@ public class AzureDevOpsService : IAzureDevOpsService
 
     private List<AzurePackageInfo> _packageCache = [];
 
+    private readonly ILoggingService _logger;
+
+    public AzureDevOpsService(
+        ILoggingService logger)
+    {
+        _logger = logger;
+    }
+
     public async Task<AzureDevOpsSettings> GetSettingsAsync()
     {
         if (!File.Exists(_settingsFile))
@@ -120,11 +128,15 @@ public class AzureDevOpsService : IAzureDevOpsService
 
         if (process.ExitCode != 0)
         {
-            var error =
-                await process.StandardError.ReadToEndAsync();
+            var error = await process.StandardError.ReadToEndAsync();
+
+            _logger.Error($"Package {packagePath} upload failed: {error} ");
 
             throw new Exception(error);
         }
+
+        _logger.Info($"Package {packagePath} uploaded ");
+
     }
 
     public async Task<List<AzurePackageInfo>> GetAllPackagesAsync()
@@ -224,12 +236,17 @@ public class AzureDevOpsService : IAzureDevOpsService
 
         if (match is null)
         {
+
+            _logger.Info($"Package not found: {referenceName}");
+
             return new PackageMatchInfo
             {
                 ReferenceName = referenceName,
                 MatchFound = false
             };
         }
+
+        _logger.Info($"Package match found: {referenceName} -> {match.PackageId} ({match.Version})");
 
         return new PackageMatchInfo
         {
