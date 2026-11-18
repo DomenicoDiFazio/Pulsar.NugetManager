@@ -1,0 +1,148 @@
+﻿@page "/package-matching"
+
+@using Pulsar.NugetManager.Models
+@using Pulsar.NugetManager.Services.Interfaces
+
+@inject ISolutionMigrationService SolutionMigrationService
+@inject IAzureDevOpsService AzureDevOpsService
+
+@rendermode InteractiveServer
+
+<PageTitle>Package Matching</PageTitle>
+
+<div class="matching-page">
+
+    <div class="page-header">
+
+        <h1>Package Matching</h1>
+
+        <p>
+            Verifica se le DLL della solution sono presenti
+            nei Feed Azure Artifacts.
+        </p>
+
+    </div>
+
+    <div class="config-card">
+
+        <div class="form-group">
+
+            <label>Cartella Solution</label>
+
+            <input class="form-input"
+                   @bind="SolutionPath" />
+
+        </div>
+
+        <button class="analyze-button"
+                @onclick="AnalyzeAsync">
+            Analizza
+        </button>
+
+        @if (IsLoading)
+        {
+            <div class="loading-message">
+                Analisi in corso...
+            </div>
+        }
+
+    </div>
+
+    @if (Matches.Any())
+    {
+        <div class="result-card">
+
+            <table class="result-table">
+
+                <thead>
+                    <tr>
+                        <th>DLL</th>
+                        <th>Feed</th>
+                        <th>Package</th>
+                        <th>Versione</th>
+                        <th>Stato</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @foreach (var match in Matches)
+                    {
+                        <tr>
+
+                            <td>@match.ReferenceName</td>
+
+                            <td>@match.FeedName</td>
+
+                            <td>@match.PackageName</td>
+
+                            <td>@match.PackageVersion</td>
+
+                            <td>
+                                @if (match.MatchFound)
+                                {
+                                    <span class="status-ok">
+                                        ✅ Match
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="status-ko">
+                                        ❌ Non trovato
+                                    </span>
+                                }
+                            </td>
+
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+    }
+
+</div>
+
+@code {
+
+    private string SolutionPath = string.Empty;
+
+    private List<ProjectReferenceInfo> References = [];
+
+    private List<PackageMatchInfo> Matches = [];
+
+    private bool IsLoading;
+
+    private async Task AnalyzeAsync()
+    {
+        IsLoading = true;
+
+        try
+        {
+            References =
+                await SolutionMigrationService
+                    .AnalyzeSolutionAsync(
+                        SolutionPath);
+
+            Matches.Clear();
+
+            foreach (var reference in References)
+            {
+                var match =
+                    await AzureDevOpsService
+                        .FindPackageMatchAsync(
+                            reference.ReferenceName);
+
+                Matches.Add(match);
+            }
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+
+}

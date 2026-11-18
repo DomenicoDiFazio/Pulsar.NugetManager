@@ -11,4 +11,8 @@ public interface IAzureDevOpsService
     Task<List<AzureFeedInfo>> GetFeedsAsync();
 
     Task PublishPackageAsync(string packagePath, string feedName);
+
+    Task<List<AzurePackageInfo>> GetAllPackagesAsync();
+
+    Task<PackageMatchInfo>FindPackageMatchAsync(string referenceName);
 }
