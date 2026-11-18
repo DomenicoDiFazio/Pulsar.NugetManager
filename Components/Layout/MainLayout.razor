@@ -1,5 +1,4 @@
 ﻿@inherits LayoutComponentBase
-
 <div class="layout-container">
 
     <aside class="sidebar">
@@ -15,7 +14,7 @@
                 Home
             </a>
 
-            <a href="/scan" class="nav-item">
+            <a href="/scan" class="nav-item" >
                 DLL Scanner
             </a>
 
@@ -23,42 +22,66 @@
                 NuGet Package Creator
             </a>
 
-            <a href="/azure-devops" class="nav-item">
+            <button class="menu-group"
+                    @onclick="ToggleAzureDevOps">
+                @(AzureDevOpsExpanded ? "▼" : "▶")
                 Azure DevOps
-            </a>
+            </button>
 
-            <a href="/azure-artifacts" class="nav-item">
-                Azure Artifacts
-            </a>
+            @if (AzureDevOpsExpanded)
+            {
+                <div class="submenu">
 
-            <a href="/package-upload" class="nav-item">
-                Package Upload
-            </a>
+                    <a href="/azure-devops" class="submenu-item">
+                        Azure DevOps Configuration
+                    </a>
 
-            <a href="/solution-analyzer" class="nav-item">
-                Solution Analyzer
-            </a>
+                    <a href="/azure-artifacts" class="submenu-item">
+                        Azure Artifacts
+                    </a>
 
-            <a href="/package-matching" class="nav-item">
-                Package Matching
-            </a>
+                    <a href="/package-upload" class="submenu-item">
+                        Package Upload
+                    </a>
 
-            <a href="/migration-preview" class="nav-item">
-                Migration Preview
-            </a>
+                </div>
+            }
 
-            <a href="/migration-engine" class="nav-item">
-                Migration Engine
-            </a>
+            <button class="menu-group"
+                    @onclick="ToggleSolutionMigrator">
+                @(SolutionMigratorExpanded ? "▼" : "▶")
+                Solution Migrator
+            </button>
+
+            @if (SolutionMigratorExpanded)
+            {
+                <div class="submenu">
+
+                    <a href="/solution-analyzer" class="submenu-item">
+                        Solution Analyzer
+                    </a>
+
+                    <a href="/package-matching" class="submenu-item">
+                        Package Matching
+                    </a>
+
+                    <a href="/migration-preview" class="submenu-item">
+                        Migration Preview
+                    </a>
+
+                    <a href="/migration-engine" class="submenu-item">
+                        Migration Engine
+                    </a>
+
+                </div>
+            }
 
         </nav>
 
     </aside>
 
     <main class="content">
-
         @Body
-
     </main>
 
 </div>
@@ -68,3 +91,21 @@
     <a href="" class="reload">Reload</a>
     <a class="dismiss">🗙</a>
 </div>
+
+@code {
+
+    private bool AzureDevOpsExpanded = true;
+
+    private bool SolutionMigratorExpanded = true;
+
+    private void ToggleAzureDevOps()
+    {
+        AzureDevOpsExpanded = !AzureDevOpsExpanded;
+    }
+
+    private void ToggleSolutionMigrator()
+    {
+        SolutionMigratorExpanded = !SolutionMigratorExpanded;
+    }
+
+}

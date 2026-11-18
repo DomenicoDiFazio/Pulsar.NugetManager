@@ -55,3 +55,37 @@
 #blazor-error-ui {
     display: none;
 }
+
+.menu-group {
+    width: 100%;
+    padding: 14px 25px;
+    background: transparent;
+    border: none;
+    color: #e2e8f0;
+    text-align: left;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+    .menu-group:hover {
+        background-color: #334155;
+    }
+
+.submenu {
+    display: flex;
+    flex-direction: column;
+}
+
+.submenu-item {
+    padding: 10px 25px 10px 45px;
+    color: #cbd5e1;
+    text-decoration: none;
+    font-size: 13px;
+}
+
+    .submenu-item:hover {
+        background-color: #334155;
+        color: white;
+    }
+
