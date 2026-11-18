@@ -118,9 +118,7 @@ public class SolutionMigrationService : ISolutionMigrationService
     }
 
     public async Task<List<MigrationPreviewInfo>>
-    GeneratePreviewAsync(
-        List<ProjectReferenceInfo> references,
-        List<PackageMatchInfo> matches)
+    GeneratePreviewAsync(List<ProjectReferenceInfo> references, List<PackageMatchInfo> matches)
     {
         var previews =
             new List<MigrationPreviewInfo>();
@@ -181,4 +179,158 @@ public class SolutionMigrationService : ISolutionMigrationService
 
         return await Task.FromResult(previews);
     }
+
+    public async Task<List<MigrationResult>>
+    MigrateAsync( List<MigrationPreviewInfo> previews)
+    {
+        var results = new List<MigrationResult>();
+
+        var projects =
+            previews
+                .GroupBy(x => x.ProjectPath);
+
+        foreach (var project in projects)
+        {
+            var projectPath = project.Key;
+
+            try
+            {
+                var backupFolder =
+                    Path.Combine(
+                        Path.GetDirectoryName(projectPath)!,
+                        "Backup");
+
+                Directory.CreateDirectory(
+                    backupFolder);
+
+                File.Copy(
+                    projectPath,
+                    Path.Combine(
+                        backupFolder,
+                        Path.GetFileName(projectPath)),
+                    true);
+
+                var document =
+                    XDocument.Load(projectPath);
+
+                foreach (var item in project)
+                {
+                    RemoveReference(
+                        document,
+                        item.ReferenceName);
+
+                    AddPackageReference(
+                        document,
+                        item.PackageName,
+                        item.PackageVersion);
+                }
+
+                document.Save(projectPath);
+
+                foreach (var item in project)
+                {
+                    results.Add(
+                        new MigrationResult
+                        {
+                            ProjectName =
+                                item.ProjectName,
+
+                            PackageName =
+                                item.PackageName,
+
+                            Version =
+                                item.PackageVersion,
+
+                            Success = true,
+
+                            Message =
+                                "Migrato con successo"
+                        });
+                }
+            }
+            catch (Exception ex)
+            {
+                foreach (var item in project)
+                {
+                    results.Add(
+                        new MigrationResult
+                        {
+                            ProjectName =
+                                item.ProjectName,
+
+                            PackageName =
+                                item.PackageName,
+
+                            Version =
+                                item.PackageVersion,
+
+                            Success = false,
+
+                            Message = ex.Message
+                        });
+                }
+            }
+        }
+
+        return await Task.FromResult(results);
+    }
+
+    private static void RemoveReference(XDocument document, string referenceName)
+    {
+        var references =
+            document.Descendants()
+                .Where(x =>
+                    x.Name.LocalName == "Reference");
+
+        var reference =
+            references.FirstOrDefault(x =>
+                (x.Attribute("Include")?.Value ?? "")
+                    .StartsWith(
+                        referenceName,
+                        StringComparison.OrdinalIgnoreCase));
+
+        reference?.Remove();
+    }
+
+    private static void AddPackageReference(XDocument document, string packageName, string version)
+    {
+        var project =
+            document.Root;
+
+        if (project is null)
+        {
+            return;
+        }
+
+        var itemGroup =
+            project.Elements()
+                .FirstOrDefault(x =>
+                    x.Name.LocalName == "ItemGroup" &&
+                    x.Elements()
+                        .Any(e =>
+                            e.Name.LocalName ==
+                            "PackageReference"));
+
+        if (itemGroup is null)
+        {
+            itemGroup =
+                new XElement(
+                    project.Name.Namespace +
+                    "ItemGroup");
+
+            project.Add(itemGroup);
+        }
+
+        itemGroup.Add(
+            new XElement(
+                project.Name.Namespace +
+                "PackageReference",
+                new XAttribute(
+                    "Include",
+                    packageName),
+                new XAttribute(
+                    "Version",
+                    version)));
+    }
+
 }

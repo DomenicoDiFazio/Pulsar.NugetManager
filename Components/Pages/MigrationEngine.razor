@@ -1,0 +1,223 @@
+﻿@page "/migration-engine"
+
+@using Pulsar.NugetManager.Models
+@using Pulsar.NugetManager.Services.Interfaces
+
+@inject ISolutionMigrationService SolutionMigrationService
+@inject IAzureDevOpsService AzureDevOpsService
+
+@rendermode InteractiveServer
+
+<PageTitle>Migration Engine</PageTitle>
+
+<div class="engine-page">
+
+    <div class="page-header">
+
+        <h1>Migration Engine</h1>
+
+        <p>
+            Esegue la conversione dei riferimenti DLL in
+            PackageReference e aggiorna i file .csproj.
+        </p>
+
+    </div>
+
+    <div class="config-card">
+
+        <div class="form-group">
+
+            <label>Cartella Solution</label>
+
+            <input class="form-input"
+                   @bind="SolutionPath" />
+
+        </div>
+
+        <button class="analyze-button"
+                @onclick="AnalyzeAsync">
+            Analizza
+        </button>
+
+        @if (IsLoading)
+        {
+            <div class="loading-message">
+                Analisi in corso...
+            </div>
+        }
+
+    </div>
+
+    @if (Previews.Any())
+    {
+        <div class="result-card">
+
+            <div class="action-bar">
+
+                <button class="migrate-button"
+                        @onclick="ExecuteMigrationAsync">
+                    Esegui Migrazione
+                </button>
+
+            </div>
+
+            <table class="result-table">
+
+                <thead>
+                    <tr>
+                        <th>Solution</th>
+                        <th>Progetto</th>
+                        <th>Project Path</th>
+                        <th>DLL</th>
+                        <th>Package</th>
+                        <th>Versione</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @foreach (var item in Previews)
+                    {
+                        <tr>
+
+                            <td>@item.SolutionName</td>
+
+                            <td>@item.ProjectName</td>
+
+                            <td title="@item.ProjectPath">
+                                @item.ProjectPath
+                            </td>
+
+                            <td>@item.ReferenceName</td>
+
+                            <td>@item.PackageName</td>
+
+                            <td>@item.PackageVersion</td>
+
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+    }
+
+    @if (MigrationResults.Any())
+    {
+        <div class="result-card">
+
+            <h3>Risultati Migrazione</h3>
+
+            <table class="result-table">
+
+                <thead>
+                    <tr>
+                        <th>Progetto</th>
+                        <th>Package</th>
+                        <th>Versione</th>
+                        <th>Esito</th>
+                        <th>Messaggio</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    @foreach (var result in MigrationResults)
+                    {
+                        <tr>
+
+                            <td>@result.ProjectName</td>
+
+                            <td>@result.PackageName</td>
+
+                            <td>@result.Version</td>
+
+                            <td>
+                                @if (result.Success)
+                                {
+                                    <span class="status-ok">
+                                        ✅ Successo
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="status-ko">
+                                        ❌ Errore
+                                    </span>
+                                }
+                            </td>
+
+                            <td>@result.Message</td>
+
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+    }
+
+</div>
+
+@code {
+
+    private string SolutionPath = string.Empty;
+
+    private bool IsLoading;
+
+    private List<ProjectReferenceInfo> References = [];
+
+    private List<PackageMatchInfo> Matches = [];
+
+    private List<MigrationPreviewInfo> Previews = [];
+
+    private List<MigrationResult> MigrationResults = [];
+
+    private async Task AnalyzeAsync()
+    {
+        IsLoading = true;
+
+        try
+        {
+            References =
+                await SolutionMigrationService
+                    .AnalyzeSolutionAsync(
+                        SolutionPath);
+
+            Matches.Clear();
+
+            foreach (var reference in References)
+            {
+                var match =
+                    await AzureDevOpsService
+                        .FindPackageMatchAsync(
+                            reference.ReferenceName);
+
+                Matches.Add(match);
+            }
+
+            Previews =
+                await SolutionMigrationService
+                    .GeneratePreviewAsync(
+                        References,
+                        Matches);
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private async Task ExecuteMigrationAsync()
+    {
+        MigrationResults =
+            await SolutionMigrationService
+                .MigrateAsync(
+                    Previews);
+    }
+
+}

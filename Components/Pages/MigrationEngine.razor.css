@@ -1,0 +1,108 @@
+﻿.engine-page {
+    width: 100%;
+}
+
+.page-header {
+    margin-bottom: 25px;
+}
+
+    .page-header h1 {
+        margin-bottom: 5px;
+    }
+
+    .page-header p {
+        color: #64748b;
+    }
+
+.config-card,
+.result-card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+    }
+
+.form-input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+
+.analyze-button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+    .analyze-button:hover {
+        background: #1d4ed8;
+    }
+
+.migrate-button {
+    background: #16a34a;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+    .migrate-button:hover {
+        background: #15803d;
+    }
+
+.loading-message {
+    margin-top: 15px;
+    padding: 12px;
+    background-color: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+    color: #1d4ed8;
+    font-weight: 600;
+}
+
+.action-bar {
+    margin-bottom: 20px;
+}
+
+.result-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .result-table th,
+    .result-table td {
+        text-align: left;
+        padding: 12px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .result-table th {
+        background-color: #f8fafc;
+    }
+
+.status-ok {
+    color: #15803d;
+    font-weight: 600;
+}
+
+.status-ko {
+    color: #dc2626;
+    font-weight: 600;
+}

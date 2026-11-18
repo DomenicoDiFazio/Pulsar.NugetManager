@@ -6,7 +6,8 @@ public interface ISolutionMigrationService
 {
     Task<List<ProjectReferenceInfo>> AnalyzeSolutionAsync(string solutionPath);
 
-    Task<List<MigrationPreviewInfo>>
-    GeneratePreviewAsync(List<ProjectReferenceInfo> references, List<PackageMatchInfo> matches);
+    Task<List<MigrationPreviewInfo>> GeneratePreviewAsync(List<ProjectReferenceInfo> references, List<PackageMatchInfo> matches);
+
+    Task<List<MigrationResult>> MigrateAsync(List<MigrationPreviewInfo> previews);
 
 }
