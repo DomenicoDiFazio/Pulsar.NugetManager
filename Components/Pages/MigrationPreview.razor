@@ -1,0 +1,186 @@
+﻿@page "/migration-preview"
+
+@using Pulsar.NugetManager.Models
+@using Pulsar.NugetManager.Services.Interfaces
+
+@inject ISolutionMigrationService SolutionMigrationService
+@inject IAzureDevOpsService AzureDevOpsService
+
+@rendermode InteractiveServer
+
+<PageTitle>Migration Preview</PageTitle>
+
+<div class="preview-page">
+
+    <div class="page-header">
+
+        <h1>Migration Preview</h1>
+
+        <p>
+            Visualizza in anteprima la conversione dei riferimenti DLL
+            in PackageReference senza modificare i file di progetto.
+        </p>
+
+    </div>
+
+    <div class="config-card">
+
+        <div class="form-group">
+
+            <label>Cartella Solution</label>
+
+            <input class="form-input"
+                   @bind="SolutionPath" />
+
+        </div>
+
+        <button class="analyze-button"
+                @onclick="GeneratePreviewAsync">
+            Genera Preview
+        </button>
+
+        @if (IsLoading)
+        {
+            <div class="loading-message">
+                Analisi in corso...
+            </div>
+        }
+
+    </div>
+
+    @if (Previews.Any())
+    {
+        <div class="result-card">
+
+            <table class="result-table">
+
+                <thead>
+
+                    <tr>
+                        <th>Solution</th>
+                        <th>Progetto</th>
+                        <th>Path</th>
+                        <th>DLL</th>
+                        <th>Package</th>
+                        <th>Versione</th>
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    @foreach (var item in Previews)
+                    {
+                        <tr>
+
+                            <td>@item.SolutionName</td>
+
+                            <td>@item.ProjectName</td>
+
+                            <td title="@item.ProjectPath">@item.ProjectPath</td>
+
+                            <td>@item.ReferenceName</td>
+
+                            <td>@item.PackageName</td>
+
+                            <td>@item.PackageVersion</td>
+
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        @foreach (var item in Previews)
+        {
+            <div class="preview-card">
+
+                <div class="preview-header">
+
+                    <div>
+                        <strong>@item.ProjectName</strong>
+                    </div>
+
+                    <div>
+                        @item.ReferenceName
+                    </div>
+
+                </div>
+
+                <div class="preview-columns">
+
+                    <div class="preview-column">
+
+                        <h4>PRIMA</h4>
+
+                        <pre>@item.CurrentReferenceXml</pre>
+
+                    </div>
+
+                    <div class="preview-column">
+
+                        <h4>DOPO</h4>
+
+                        <pre>@item.NewReferenceXml</pre>
+
+                    </div>
+
+                </div>
+
+            </div>
+        }
+    }
+
+</div>
+
+@code {
+
+    private string SolutionPath = string.Empty;
+
+    private bool IsLoading;
+
+    private List<ProjectReferenceInfo> References = [];
+
+    private List<PackageMatchInfo> Matches = [];
+
+    private List<MigrationPreviewInfo> Previews = [];
+
+    private async Task GeneratePreviewAsync()
+    {
+        IsLoading = true;
+
+        try
+        {
+            References =
+                await SolutionMigrationService
+                    .AnalyzeSolutionAsync(
+                        SolutionPath);
+
+            Matches.Clear();
+
+            foreach (var reference in References)
+            {
+                var match =
+                    await AzureDevOpsService
+                        .FindPackageMatchAsync(
+                            reference.ReferenceName);
+
+                Matches.Add(match);
+            }
+
+            Previews =
+                await SolutionMigrationService
+                    .GeneratePreviewAsync(
+                        References,
+                        Matches);
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+}

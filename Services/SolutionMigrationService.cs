@@ -116,4 +116,69 @@ public class SolutionMigrationService : ISolutionMigrationService
 
         return results;
     }
+
+    public async Task<List<MigrationPreviewInfo>>
+    GeneratePreviewAsync(
+        List<ProjectReferenceInfo> references,
+        List<PackageMatchInfo> matches)
+    {
+        var previews =
+            new List<MigrationPreviewInfo>();
+
+        foreach (var reference in references)
+        {
+            var match =
+                matches.FirstOrDefault(x =>
+                    x.ReferenceName == reference.ReferenceName &&
+                    x.MatchFound);
+
+            if (match is null)
+            {
+                continue;
+            }
+
+            previews.Add(
+                new MigrationPreviewInfo
+                {
+                    SolutionName =
+                        reference.SolutionName,
+
+                    ProjectName =
+                        reference.ProjectName,
+
+                    ProjectPath =
+                        reference.ProjectPath,
+
+                    ReferenceName =
+                        reference.ReferenceName,
+
+                    HintPath =
+                        reference.ReferencePath,
+
+                    FeedName =
+                        match.FeedName,
+
+                    PackageName =
+                        match.PackageName,
+
+                    PackageVersion =
+                        match.PackageVersion,
+
+                    CurrentReferenceXml =
+                            $"""
+                        <Reference Include="{reference.ReferenceName}">
+                            <HintPath>{reference.ReferencePath}</HintPath>
+                        </Reference>
+                        """,
+
+                                            NewReferenceXml =
+                            $"""
+                        <PackageReference Include="{match.PackageName}"
+                                          Version="{match.PackageVersion}" />
+                        """
+                });
+        }
+
+        return await Task.FromResult(previews);
+    }
 }
