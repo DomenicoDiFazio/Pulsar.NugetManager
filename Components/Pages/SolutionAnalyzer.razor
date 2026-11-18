@@ -26,7 +26,7 @@
 
         <div class="form-group">
 
-            <label>Solution Path</label>
+            <label>Cartella Solution</label>
 
             <input class="form-input"
                    @bind="SolutionPath" />
@@ -44,15 +44,11 @@
     {
         <div class="result-card">
 
-            <div class="result-header">
-                Riferimenti trovati:
-                <strong>@References.Count</strong>
-            </div>
-
             <table class="result-table">
 
                 <thead>
                     <tr>
+                        <th>Solution</th>
                         <th>Progetto</th>
                         <th>Riferimento</th>
                         <th>HintPath</th>
@@ -64,6 +60,7 @@
                     @foreach (var reference in References)
                     {
                         <tr>
+                            <td>@reference.SolutionName</td>
                             <td>@reference.ProjectName</td>
                             <td>@reference.ReferenceName</td>
                             <td>@reference.ReferencePath</td>
@@ -82,15 +79,27 @@
 @code {
 
     private string SolutionPath = string.Empty;
+    private string SolutionName = string.Empty;
 
     private List<ProjectReferenceInfo> References = [];
 
     private async Task AnalyzeAsync()
     {
+        var slnFile = Directory
+            .GetFiles(
+                SolutionPath,
+                "*.sln",
+                SearchOption.TopDirectoryOnly)
+            .FirstOrDefault();
+
+        SolutionName = slnFile is null
+            ? string.Empty
+            : Path.GetFileNameWithoutExtension(slnFile);
+
         References =
             await SolutionMigrationService
-            .AnalyzeSolutionAsync(
-                SolutionPath);
+                .AnalyzeSolutionAsync(
+                    SolutionPath);
     }
 
 }

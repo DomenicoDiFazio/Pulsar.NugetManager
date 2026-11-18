@@ -1,4 +1,5 @@
-﻿using System.Xml.Linq;
+﻿using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using Pulsar.NugetManager.Models;
 using Pulsar.NugetManager.Services.Interfaces;
 
@@ -11,26 +12,81 @@ public class SolutionMigrationService : ISolutionMigrationService
     {
         var results = new List<ProjectReferenceInfo>();
 
-        var solutionFolder =
-            Path.GetDirectoryName(solutionPath)!;
+        string solutionFile;
 
-        var projectFiles =
-            Directory.GetFiles(
-                solutionFolder,
-                "*.csproj",
-                SearchOption.AllDirectories);
+        if (Directory.Exists(solutionPath))
+        {
+            var slnFiles = Directory.GetFiles(
+                solutionPath,
+                "*.sln",
+                SearchOption.TopDirectoryOnly);
+
+            if (slnFiles.Length == 0)
+            {
+                return results;
+            }
+
+            solutionFile = slnFiles[0];
+        }
+        else
+        {
+            return results;
+        }
+
+        var solutionFolder =
+            Path.GetDirectoryName(solutionFile)!;
+
+        var slnLines =
+            await File.ReadAllLinesAsync(solutionFile);
+
+
+        var projectFiles = new List<string>();
+
+        foreach (var line in slnLines)
+        {
+            if (!line.StartsWith("Project("))
+            {
+                continue;
+            }
+
+            var match = Regex.Match(
+                line,
+                "\"([^\"]+\\.csproj)\"",
+                RegexOptions.IgnoreCase);
+
+            if (!match.Success)
+            {
+                continue;
+            }
+
+            var relativeProjectPath =
+                match.Groups[1].Value;
+
+            var fullProjectPath =
+                Path.GetFullPath(
+                    Path.Combine(
+                        solutionFolder,
+                        relativeProjectPath));
+
+            if (File.Exists(fullProjectPath))
+            {
+                projectFiles.Add(fullProjectPath);
+            }
+        }
 
         foreach (var projectFile in projectFiles)
         {
             var document = XDocument.Load(projectFile);
 
-            var references =
-                document.Descendants("Reference");
+            var references = document
+                  .Descendants()
+                  .Where(x => x.Name.LocalName == "Reference");
 
             foreach (var reference in references)
             {
-                var hintPath =
-                    reference.Element("HintPath");
+                var hintPath = reference
+                     .Elements()
+                     .FirstOrDefault(x => x.Name.LocalName == "HintPath");
 
                 if (hintPath is null)
                 {
@@ -39,11 +95,14 @@ public class SolutionMigrationService : ISolutionMigrationService
 
                 results.Add(new ProjectReferenceInfo
                 {
-                    ProjectName =
-                        Path.GetFileNameWithoutExtension(
-                            projectFile),
+                    SolutionName =
+                        Path.GetFileNameWithoutExtension(solutionFile),
 
-                    ProjectPath = projectFile,
+                    ProjectName =
+                        Path.GetFileNameWithoutExtension(projectFile),
+
+                    ProjectPath =
+                        projectFile,
 
                     ReferenceName =
                         reference.Attribute("Include")?.Value
@@ -55,6 +114,6 @@ public class SolutionMigrationService : ISolutionMigrationService
             }
         }
 
-        return await Task.FromResult(results);
+        return results;
     }
 }
