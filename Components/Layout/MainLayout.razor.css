@@ -1,11 +1,16 @@
 .layout-container {
-    display: flex;
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    grid-template-rows: 1fr auto;
+    grid-template-areas:
+        "sidebar content"
+        "sidebar footer";
     min-height: 100vh;
     background-color: #f4f6f9;
 }
 
 .sidebar {
-    width: 260px;
+    grid-area: sidebar;
     background-color: #1e293b;
     color: white;
     display: flex;
@@ -47,7 +52,8 @@
     }
 
 .content {
-    flex: 1;
+    grid-area: content;
+    min-width: 0;
     padding: 30px;
     overflow-y: auto;
 }
@@ -88,4 +94,14 @@
         background-color: #334155;
         color: white;
     }
+
+.bottom-bar {
+    grid-area: footer;
+    background-color: #001529;
+    color: white;
+    padding: 10px 15px;
+    font-size: 13px;
+    border-top: 1px solid #0f2745;
+}
+
 
