@@ -28,13 +28,30 @@
                        @bind="FolderPath" />
             </div>
 
-            <button class="scan-button"
+         <button class="scan-button"
+                    disabled="@IsLoading"
                     @onclick="ScanAsync">
-                Scansiona
+                @(IsLoading
+                            ? "Caricamento..."
+                            : "Scansiona")
             </button>
 
+        @if (IsLoading)
+        {
+            <div class="loading-message">
+                Caricamento in corso...
+            </div>
+        }
+
         </div>
-    
+
+        @if (ScanCompleted && !Dlls.Any())
+        {
+            <div class="warning-message">
+                Nessuna DLL trovata nella cartella selezionata.
+            </div>
+        }
+
         @if (Dlls.Any())
         {
             <div class="result-card">
@@ -88,9 +105,26 @@
 
     private List<DllInfo> Dlls = [];
 
+    private bool IsLoading = false;
+
+    private bool ScanCompleted = false;
+
     private async Task ScanAsync()
     {
-        Dlls = await DllScannerService.ScanFolderAsync(FolderPath);
+        IsLoading = true;
+        ScanCompleted = false;
+
+        try
+        {
+            Dlls = await DllScannerService.ScanFolderAsync(FolderPath);
+
+            ScanCompleted = true;
+            
+        }
+        finally
+        {
+            IsLoading = false;
+        }
     }
 
     private string FormatFileSize(long bytes)

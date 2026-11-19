@@ -29,10 +29,26 @@
         </div>
 
         <button class="load-button"
+                disabled="@IsLoading"
                 @onclick="LoadPackagesAsync">
-            Carica Pacchetti
-        </button>
 
+            @(IsLoading
+                        ? "Caricamento..."
+                        : "Carica Pacchetti")
+
+        </button>
+        @if (LoadCompleted && !Packages.Any())
+        {
+            <div class="warning-message">
+                Nessun pacchetto .nupkg trovato nella cartella selezionata.
+            </div>
+        }
+        @if (IsLoading)
+        {
+            <div class="loading-message">
+                Caricamento in corso...
+            </div>
+        }
     </div>
 
     @if (Feeds.Any())
@@ -55,6 +71,18 @@
             </div>
         </div>
     }
+    @if (!string.IsNullOrWhiteSpace(FeedError))
+    {
+        <div class="error-box">
+            @FeedError
+        </div>
+    }
+    @if (FeedsLoaded && !Feeds.Any())
+    {
+        <div class="warning-message">
+            Nessun Feed Azure Artifacts disponibile.
+        </div>
+    }
 
     @if (Packages.Any())
     {
@@ -68,7 +96,11 @@
 
                 <thead>
                     <tr>
-                        <th></th>
+                        <th>
+                            <input type="checkbox"
+                                   checked="@SelectAll"
+                                   @onchange="ToggleSelectAll" />
+                        </th>
                         <th>Pacchetto</th>
                     </tr>
                 </thead>
@@ -81,7 +113,8 @@
 
                             <td>
                                 <input type="checkbox"
-                                       @bind="package.Selected" />
+                                       checked="@package.Selected"
+                                       @onchange="e => OnPackageSelectionChanged(package, e)" />
                             </td>
 
                             <td>
@@ -97,10 +130,21 @@
 
             <div class="actions">
 
-                <button class="publish-button"
-                        @onclick="PublishPackagesAsync">
-                    Pubblica
-                </button>
+            <button class="publish-button"
+                    disabled="@IsPublishing"
+                    @onclick="PublishPackagesAsync">
+
+                @(IsPublishing
+                                ? "Pubblicazione..."
+                                : "Pubblica")
+
+            </button>
+            @if (IsPublishing)
+                {
+                    <div class="loading-message">
+                        Pubblicazione in corso...
+                    </div>
+                }
 
             </div>
 
@@ -163,66 +207,127 @@
 
     private List<PackageCreationResult> Results = [];
 
+    private bool IsLoading = false;
+
+    private bool IsPublishing = false;
+
+    private bool LoadCompleted = false;
+
+    private bool FeedsLoaded = false;
+
+    private string FeedError = string.Empty;
+
+    private bool SelectAll = true;
+
     protected override async Task OnInitializedAsync()
     {
-        Feeds = await AzureDevOpsService.GetFeedsAsync();
-
-        if (Feeds.Any())
+        try
         {
-            SelectedFeed = Feeds.First().Name;
+            Feeds = await AzureDevOpsService.GetFeedsAsync();
+
+            FeedsLoaded = true;
+
+            if (Feeds.Any())
+            {
+                SelectedFeed = Feeds.First().Name;
+            }
+        }
+        catch (Exception ex)
+        {
+            FeedError = ex.Message;
         }
     }
 
     private Task LoadPackagesAsync()
     {
-        Packages.Clear();
+        IsLoading = true;
+        LoadCompleted = false;
 
-        if (!Directory.Exists(PackagesFolder))
+        try
         {
+            Packages.Clear();
+
+            if (!Directory.Exists(PackagesFolder))
+            {
+                LoadCompleted = true;
+                return Task.CompletedTask;
+            }
+
+            Packages = Directory
+                .GetFiles(PackagesFolder, "*.nupkg")
+                .Select(x => new NugetPackageFile
+                {
+                    FileName = Path.GetFileName(x),
+                    FullPath = x,
+                    Selected = true
+                })
+                .ToList();
+
+            SelectAll = true;
+
+            LoadCompleted = true;
+
             return Task.CompletedTask;
         }
-
-        Packages = Directory
-            .GetFiles(PackagesFolder, "*.nupkg")
-            .Select(x => new NugetPackageFile
-            {
-                FileName = Path.GetFileName(x),
-                FullPath = x,
-                Selected = true
-            })
-            .ToList();
-
-        return Task.CompletedTask;
+        finally
+        {
+            IsLoading = false;
+        }
     }
 
     private async Task PublishPackagesAsync()
     {
-        Results.Clear();
+        IsPublishing = true;
 
-        foreach (var package in Packages.Where(x => x.Selected))
+        try
         {
-            try
-            {
-                await AzureDevOpsService.PublishPackageAsync(
-                    package.FullPath,
-                    SelectedFeed);
+            Results.Clear();
 
-                Results.Add(new PackageCreationResult
-                {
-                    PackageName = package.FileName,
-                    Success = true
-                });
-            }
-            catch (Exception ex)
+            foreach (var package in Packages.Where(x => x.Selected))
             {
-                Results.Add(new PackageCreationResult
+                try
                 {
-                    PackageName = package.FileName,
-                    Success = false,
-                    ErrorMessage = ex.Message
-                });
+                    await AzureDevOpsService.PublishPackageAsync(
+                        package.FullPath,
+                        SelectedFeed);
+
+                    Results.Add(new PackageCreationResult
+                    {
+                        PackageName = package.FileName,
+                        Success = true
+                    });
+                }
+                catch (Exception ex)
+                {
+                    Results.Add(new PackageCreationResult
+                    {
+                        PackageName = package.FileName,
+                        Success = false,
+                        ErrorMessage = ex.Message
+                    });
+                }
             }
+        }
+        finally
+        {
+            IsPublishing = false;
         }
     }
 
+    private void ToggleSelectAll(ChangeEventArgs e)
+    {
+        SelectAll = (bool?)e.Value ?? false;
+
+        foreach (var package in Packages)
+        {
+            package.Selected = SelectAll;
+        }
+    }
+
+    private void OnPackageSelectionChanged(NugetPackageFile package, ChangeEventArgs e)
+    {
+        package.Selected = (bool?)e.Value ?? false;
+
+        SelectAll = Packages.All(x => x.Selected);
+    }
 }

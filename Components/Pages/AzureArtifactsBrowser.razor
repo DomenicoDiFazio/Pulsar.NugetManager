@@ -20,10 +20,26 @@
     </div>
 
     <button class="load-button"
+            disabled="@IsLoading"
             @onclick="LoadFeedsAsync">
-        Carica Feed
-    </button>
 
+        @(IsLoading
+                ? "Caricamento..."
+                : "Carica Feed")
+
+    </button>
+    @if (IsLoading)
+    {
+        <div class="loading-message">
+            Caricamento in corso...
+        </div>
+    }
+    @if (LoadCompleted && !Feeds.Any())
+    {
+        <div class="warning-message">
+            Nessun feed Azure Artifacts trovato.
+        </div>
+    }
     @if (!string.IsNullOrWhiteSpace(Error))
     {
         <div class="error-box">
@@ -71,17 +87,32 @@
 
     private string Error = string.Empty;
 
+    private bool IsLoading = false;
+
+    private bool LoadCompleted = false;
+
     private async Task LoadFeedsAsync()
     {
+        IsLoading = true;
+        LoadCompleted = false;
+
         try
         {
             Error = string.Empty;
 
+            Feeds.Clear();
+
             Feeds = await AzureDevOpsService.GetFeedsAsync();
+
+            LoadCompleted = true;
         }
         catch (Exception ex)
         {
             Error = ex.Message;
+        }
+        finally
+        {
+            IsLoading = false;
         }
     }
 

@@ -35,18 +35,34 @@
         </div>
 
         <button class="analyze-button"
+                disabled="@IsLoading"
                 @onclick="GeneratePreviewAsync">
-            Genera Preview
+
+            @(IsLoading
+                        ? "Generazione..."
+                        : "Genera Preview")
+
         </button>
 
         @if (IsLoading)
         {
             <div class="loading-message">
-                Analisi in corso...
+                Generazione preview in corso...
             </div>
         }
-
+        @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+        {
+            <div class="error-box">
+                @ErrorMessage
+            </div>
+        }
     </div>
+    @if (PreviewCompleted && !Previews.Any())
+    {
+        <div class="warning-message">
+            Nessuna migrazione disponibile per la solution selezionata.
+        </div>
+    }
 
     @if (Previews.Any())
     {
@@ -140,7 +156,9 @@
 
     private string SolutionPath = string.Empty;
 
-    private bool IsLoading;
+    private bool IsLoading = false;
+
+    private bool PreviewCompleted = false;
 
     private List<ProjectReferenceInfo> References = [];
 
@@ -148,18 +166,24 @@
 
     private List<MigrationPreviewInfo> Previews = [];
 
+    private string ErrorMessage = string.Empty;
+
     private async Task GeneratePreviewAsync()
     {
         IsLoading = true;
+        PreviewCompleted = false;
+        ErrorMessage = string.Empty;
 
         try
         {
+            References.Clear();
+            Matches.Clear();
+            Previews.Clear();
+
             References =
                 await SolutionMigrationService
                     .AnalyzeSolutionAsync(
                         SolutionPath);
-
-            Matches.Clear();
 
             foreach (var reference in References)
             {
@@ -176,6 +200,12 @@
                     .GeneratePreviewAsync(
                         References,
                         Matches);
+
+            PreviewCompleted = true;
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
         }
         finally
         {

@@ -48,3 +48,27 @@
     color: #16a34a;
     font-weight: 600;
 }
+
+.password-container {
+    position: relative;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 18px;
+    padding: 0;
+}
+
+    .password-toggle:hover {
+        opacity: 0.7;
+    }
+
+.password-container .form-input {
+    padding-right: 10px;
+}

@@ -14,6 +14,11 @@ public class NugetPackageService : INugetPackageService
     {
         var results = new List<PackageCreationResult>();
 
+        if (string.IsNullOrEmpty(outputFolder))
+        {
+            return results;
+        }
+
         Directory.CreateDirectory(outputFolder);
 
         foreach (var dll in dlls.Where(x => x.Selected))

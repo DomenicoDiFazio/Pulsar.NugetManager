@@ -35,8 +35,13 @@
         </div>
 
         <button class="analyze-button"
+                disabled="@IsLoading"
                 @onclick="AnalyzeAsync">
-            Analizza
+
+            @(IsLoading
+                        ? "Analisi..."
+                        : "Analizza")
+
         </button>
 
         @if (IsLoading)
@@ -47,7 +52,12 @@
         }
 
     </div>
-
+    @if (AnalysisCompleted && !Matches.Any())
+    {
+        <div class="warning-message">
+            Nessun riferimento DLL trovato nella solution selezionata.
+        </div>
+    }
     @if (Matches.Any())
     {
         <div class="result-card">
@@ -113,20 +123,23 @@
 
     private List<PackageMatchInfo> Matches = [];
 
-    private bool IsLoading;
+    private bool IsLoading = false;
+    private bool AnalysisCompleted = false;
 
     private async Task AnalyzeAsync()
     {
         IsLoading = true;
+        AnalysisCompleted = false;
 
         try
         {
+            References.Clear();
+            Matches.Clear();
+
             References =
                 await SolutionMigrationService
                     .AnalyzeSolutionAsync(
                         SolutionPath);
-
-            Matches.Clear();
 
             foreach (var reference in References)
             {
@@ -137,6 +150,8 @@
 
                 Matches.Add(match);
             }
+
+            AnalysisCompleted = true;
         }
         finally
         {

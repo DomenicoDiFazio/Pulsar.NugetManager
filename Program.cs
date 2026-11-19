@@ -19,8 +19,6 @@ builder.Services.AddScoped<ISolutionMigrationService, SolutionMigrationService>(
 
 builder.Services.AddSingleton<ILoggingService, LoggingService>();
 
-builder.Logging.ClearProviders();
-
 builder.Host.UseNLog();
 
 var app = builder.Build();

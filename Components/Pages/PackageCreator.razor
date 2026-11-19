@@ -37,11 +37,26 @@
         </div>
 
         <button class="action-button"
+                disabled="@IsLoading"
                 @onclick="LoadDllsAsync">
-            Carica DLL
+            @(IsLoading
+                        ? "Caricamento..."
+                        : "Carica DLL")
         </button>
-
+        @if (IsLoading)
+        {
+            <div class="loading-message">
+                Caricamento in corso...
+            </div>
+        }
     </div>
+
+    @if (LoadCompleted && !Dlls.Any())
+    {
+        <div class="warning-message">
+            Nessuna DLL trovata nella cartella selezionata.
+        </div>
+    }
 
     @if (Dlls.Any())
     {
@@ -55,7 +70,11 @@
 
                 <thead>
                     <tr>
-                        <th></th>
+                        <th>
+                            <input type="checkbox"
+                                   checked="@SelectAll"
+                                   @onchange="ToggleSelectAll" />
+                        </th>
                         <th>Nome</th>
                         <th>Versione</th>
                         <th>Dimensione</th>
@@ -94,9 +113,21 @@
 
             <div class="actions">
 
-                <button class="generate-button" @onclick="GeneratePackagesAsync">
-                    Genera Pacchetti
-                </button>
+            <button class="generate-button"
+                    disabled="@IsGenerating"
+                    @onclick="GeneratePackagesAsync">
+                @(IsGenerating
+                                ? "Generazione..."
+                                : "Genera Pacchetti")
+            </button>
+
+                @if (IsGenerating)
+                {
+                    <div class="loading-message">
+                        Generazione pacchetti in corso...
+                    </div>
+                }
+
                 @if (Results.Any())
                 {
                     <div class="result-card mt-3">
@@ -154,9 +185,36 @@
 
     private List<PackageCreationResult> Results = [];
 
+    private bool IsLoading = false;
+
+    private bool LoadCompleted = false;
+
+    private bool IsGenerating = false;
+
+    private bool SelectAll = true;
+
     private async Task LoadDllsAsync()
     {
-        Dlls = await DllScannerService.ScanFolderAsync(DllFolder);
+        IsLoading = true;
+        LoadCompleted = false;
+
+        try
+        {
+            Dlls = await DllScannerService.ScanFolderAsync(DllFolder);
+
+            foreach (var dll in Dlls)
+            {
+                dll.Selected = true;
+            }
+
+            SelectAll = true;
+
+            LoadCompleted = true;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
     }
 
     private string FormatFileSize(long bytes)
@@ -178,9 +236,31 @@
 
     private async Task GeneratePackagesAsync()
     {
-        Results = await NugetPackageService.CreatePackagesAsync(
-            Dlls,
-            OutputFolder);
+        IsGenerating = true;
+
+        try
+        {
+            Results.Clear();
+
+            Results = await NugetPackageService
+                .CreatePackagesAsync(
+                    Dlls,
+                    OutputFolder);
+        }
+        finally
+        {
+            IsGenerating = false;
+        }
+    }
+
+    private void ToggleSelectAll(ChangeEventArgs e)
+    {
+        SelectAll = (bool?)e.Value ?? false;
+
+        foreach (var dll in Dlls)
+        {
+            dll.Selected = SelectAll;
+        }
     }
 
 }

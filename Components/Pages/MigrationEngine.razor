@@ -35,8 +35,13 @@
         </div>
 
         <button class="analyze-button"
+                disabled="@IsLoading"
                 @onclick="AnalyzeAsync">
-            Analizza
+
+            @(IsLoading
+                        ? "Analisi..."
+                        : "Analizza")
+
         </button>
 
         @if (IsLoading)
@@ -45,9 +50,19 @@
                 Analisi in corso...
             </div>
         }
-
+        @if (!string.IsNullOrWhiteSpace(ErrorMessage))
+        {
+            <div class="error-box">
+                @ErrorMessage
+            </div>
+        }
     </div>
-
+    @if (AnalysisCompleted && !Previews.Any())
+    {
+        <div class="warning-message">
+            Nessuna migrazione disponibile per la solution selezionata.
+        </div>
+    }
     @if (Previews.Any())
     {
         <div class="result-card">
@@ -55,10 +70,20 @@
             <div class="action-bar">
 
                 <button class="migrate-button"
+                        disabled="@IsMigrating"
                         @onclick="ExecuteMigrationAsync">
-                    Esegui Migrazione
-                </button>
 
+                    @(IsMigrating
+                                    ? "Migrazione..."
+                                    : "Esegui Migrazione")
+
+            </button>
+            @if (IsMigrating)
+                {
+                    <div class="loading-message">
+                        Migrazione in corso...
+                    </div>
+                }
             </div>
 
             <table class="result-table">
@@ -167,7 +192,13 @@
 
     private string SolutionPath = string.Empty;
 
-    private bool IsLoading;
+    private bool IsLoading = false;
+
+    private bool AnalysisCompleted = false;
+
+    private bool IsMigrating = false;
+
+    private string ErrorMessage = string.Empty;
 
     private List<ProjectReferenceInfo> References = [];
 
@@ -180,15 +211,19 @@
     private async Task AnalyzeAsync()
     {
         IsLoading = true;
+        AnalysisCompleted = false;
+        ErrorMessage = string.Empty;
 
         try
         {
+            References.Clear();
+            Matches.Clear();
+            Previews.Clear();
+
             References =
                 await SolutionMigrationService
                     .AnalyzeSolutionAsync(
                         SolutionPath);
-
-            Matches.Clear();
 
             foreach (var reference in References)
             {
@@ -205,6 +240,12 @@
                     .GeneratePreviewAsync(
                         References,
                         Matches);
+
+            AnalysisCompleted = true;
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
         }
         finally
         {
@@ -214,10 +255,21 @@
 
     private async Task ExecuteMigrationAsync()
     {
-        MigrationResults =
-            await SolutionMigrationService
-                .MigrateAsync(
-                    Previews);
+        IsMigrating = true;
+
+        try
+        {
+            MigrationResults.Clear();
+
+            MigrationResults =
+                await SolutionMigrationService
+                    .MigrateAsync(
+                        Previews);
+        }
+        finally
+        {
+            IsMigrating = false;
+        }
     }
 
 }

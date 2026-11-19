@@ -33,13 +33,19 @@
         </div>
 
         <div class="form-group">
-
             <label>PAT Token</label>
 
-            <input type="password"
-                   class="form-input"
-                   @bind="Settings.PersonalAccessToken" />
+            <div class="password-container">
+                <input type="@(ShowPatToken ? "text" : "password")"
+                       class="form-input"
+                       @bind="Settings.PersonalAccessToken" />
 
+                <button type="button"
+                        class="password-toggle"
+                        @onclick="TogglePatVisibility">
+                    @(ShowPatToken ? "🙈" : "👁")
+                </button>
+            </div>
         </div>
 
         <div class="form-group">
@@ -73,6 +79,8 @@
 
     private string Message = string.Empty;
 
+    private bool ShowPatToken;
+
     protected override async Task OnInitializedAsync()
     {
         Settings = await AzureDevOpsService.GetSettingsAsync();
@@ -83,6 +91,11 @@
         await AzureDevOpsService.SaveSettingsAsync(Settings);
 
         Message = "Configurazione salvata.";
+    }
+
+    private void TogglePatVisibility()
+    {
+        ShowPatToken = !ShowPatToken;
     }
 
 }

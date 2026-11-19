@@ -34,12 +34,27 @@
         </div>
 
         <button class="analyze-button"
+                disabled="@IsLoading"
                 @onclick="AnalyzeAsync">
-            Analizza
+
+            @(IsLoading
+                        ? "Analisi..."
+                        : "Analizza")
+
         </button>
-
+        @if (IsLoading)
+        {
+            <div class="loading-message">
+                Analisi in corso...
+            </div>
+        }
     </div>
-
+    @if (AnalysisCompleted && !References.Any())
+    {
+        <div class="warning-message">
+            Nessun riferimento DLL trovato nella solution selezionata.
+        </div>
+    }
     @if (References.Any())
     {
         <div class="result-card">
@@ -79,27 +94,51 @@
 @code {
 
     private string SolutionPath = string.Empty;
+
     private string SolutionName = string.Empty;
+
+    private bool IsLoading = false;
+
+    private bool AnalysisCompleted = false;
 
     private List<ProjectReferenceInfo> References = [];
 
     private async Task AnalyzeAsync()
     {
-        var slnFile = Directory
-            .GetFiles(
-                SolutionPath,
-                "*.sln",
-                SearchOption.TopDirectoryOnly)
-            .FirstOrDefault();
+        IsLoading = true;
+        AnalysisCompleted = false;
 
-        SolutionName = slnFile is null
-            ? string.Empty
-            : Path.GetFileNameWithoutExtension(slnFile);
+        try
+        {
+            References.Clear();
 
-        References =
-            await SolutionMigrationService
-                .AnalyzeSolutionAsync(
-                    SolutionPath);
+            if (string.IsNullOrEmpty(SolutionPath))
+            {
+                return;
+            }
+
+            var slnFile = Directory
+                .GetFiles(
+                    SolutionPath,
+                    "*.sln",
+                    SearchOption.TopDirectoryOnly)
+                .FirstOrDefault();
+
+            SolutionName = slnFile is null
+                ? string.Empty
+                : Path.GetFileNameWithoutExtension(slnFile);
+
+            References =
+                await SolutionMigrationService
+                    .AnalyzeSolutionAsync(
+                        SolutionPath);
+
+            AnalysisCompleted = true;
+        }
+        finally
+        {
+            IsLoading = false;
+        }
     }
 
 }
