@@ -57,15 +57,37 @@
 
         </div>
 
-        <button class="save-button"
-                @onclick="SaveAsync">
-            Salva
-        </button>
+        <div class="actions">
+
+            <button class="save-button"
+                    @onclick="SaveAsync">
+                Salva
+            </button>
+
+            <button class="test-button"
+                    disabled="@IsTesting"
+                    @onclick="TestConnectionAsync">
+
+                @(IsTesting
+                                ? "Test in corso..."
+                                : "Testa Connessione")
+
+            </button>
+
+        </div>
+
 
         @if (!string.IsNullOrWhiteSpace(Message))
         {
             <div class="message">
                 @Message
+            </div>
+        }
+
+        @if (!string.IsNullOrWhiteSpace(TestMessage))
+        {
+            <div class="@(ConnectionOk ? "success-box" : "error-box")">
+                @TestMessage
             </div>
         }
 
@@ -80,6 +102,12 @@
     private string Message = string.Empty;
 
     private bool ShowPatToken;
+
+    private bool IsTesting = false;
+
+    private bool ConnectionOk = false;
+
+    private string TestMessage = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -98,4 +126,34 @@
         ShowPatToken = !ShowPatToken;
     }
 
+    private async Task TestConnectionAsync()
+    {
+        IsTesting = true;
+
+        try
+        {
+            TestMessage = string.Empty;
+            ConnectionOk = false;
+
+            await AzureDevOpsService.SaveSettingsAsync(Settings);
+
+            var feeds =
+                await AzureDevOpsService.GetFeedsAsync();
+
+            ConnectionOk = true;
+
+            TestMessage =
+                $"Connessione riuscita. Feed trovati: {feeds.Count}";
+        }
+        catch (Exception ex)
+        {
+            ConnectionOk = false;
+
+            TestMessage = ex.Message;
+        }
+        finally
+        {
+            IsTesting = false;
+        }
+    }
 }
