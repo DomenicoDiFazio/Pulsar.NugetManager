@@ -124,15 +124,24 @@ public class AzureDevOpsService : IAzureDevOpsService
 
         process.Start();
 
+        var outputTask = process.StandardOutput.ReadToEndAsync();
+        var errorTask = process.StandardError.ReadToEndAsync();
+
         await process.WaitForExitAsync();
+
+        var output = await outputTask;
+        var error = await errorTask;
 
         if (process.ExitCode != 0)
         {
-            var error = await process.StandardError.ReadToEndAsync();
+            var message = string.IsNullOrWhiteSpace(error)
+                ? output
+                : error;
 
-            _logger.Error($"Package {packagePath} upload failed: {error} ");
+            _logger.Error(
+                $"Package {packagePath} upload failed. ExitCode={process.ExitCode}. Message={message}");
 
-            throw new Exception(error);
+            throw new Exception(message);
         }
 
         _logger.Info($"Package {packagePath} uploaded ");
