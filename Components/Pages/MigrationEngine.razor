@@ -67,25 +67,6 @@
     {
         <div class="result-card">
 
-            <div class="action-bar">
-
-                <button class="migrate-button"
-                        disabled="@IsMigrating"
-                        @onclick="ExecuteMigrationAsync">
-
-                    @(IsMigrating
-                                    ? "Migrazione..."
-                                    : "Esegui Migrazione")
-
-            </button>
-            @if (IsMigrating)
-                {
-                    <div class="loading-message">
-                        Migrazione in corso...
-                    </div>
-                }
-            </div>
-
             <table class="result-table">
 
                 <thead>
@@ -125,7 +106,24 @@
                 </tbody>
 
             </table>
+            <div class="action-bar">
 
+                <button class="migrate-button"
+                        disabled="@IsMigrating"
+                        @onclick="ExecuteMigrationAsync">
+
+                    @(IsMigrating
+                                    ? "Migrazione..."
+                                    : "Esegui Migrazione")
+
+                </button>
+                @if (IsMigrating)
+                    {
+                        <div class="loading-message">
+                            Migrazione in corso...
+                        </div>
+                    }
+                </div>
         </div>
     }
 
