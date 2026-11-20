@@ -27,3 +27,29 @@ h1:focus {
 .darker-border-checkbox.form-check-input {
     border-color: #929292;
 }
+
+/* Riga "input + pulsante Sfoglia" usata in tutte le pagine */
+.folder-row {
+    display: flex;
+    gap: 10px;
+}
+
+.folder-row .form-input,
+.folder-row .folder-input {
+    flex: 1;
+    min-width: 0;
+}
+
+/* Pulsante "Sfoglia..." */
+.browse-button {
+    padding: 0 18px;
+    border: 1px solid #cbd5e1;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.browse-button:hover {
+    background: #f1f5f9;
+}
