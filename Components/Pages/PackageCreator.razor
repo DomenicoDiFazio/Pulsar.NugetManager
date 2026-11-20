@@ -209,6 +209,12 @@
 
         try
         {
+            Dlls.Clear();
+
+            if (string.IsNullOrEmpty(DllFolder))
+            {
+                return;
+            }
 
             await Task.Delay(1000);
 
@@ -253,6 +259,11 @@
         try
         {
             Results.Clear();
+
+            if (string.IsNullOrEmpty(OutputFolder))
+            {
+                return;
+            }
 
             Results = await NugetPackageService
                 .CreatePackagesAsync(

@@ -126,6 +126,11 @@
 
             Dlls.Clear();
 
+            if (string.IsNullOrEmpty(FolderPath))
+            {
+                return;
+            }
+
             await Task.Delay(1000);
 
             Dlls = await DllScannerService.ScanFolderAsync(FolderPath);

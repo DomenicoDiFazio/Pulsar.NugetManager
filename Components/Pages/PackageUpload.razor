@@ -250,6 +250,11 @@
         {
             Packages.Clear();
 
+            if (string.IsNullOrEmpty(PackagesFolder))
+            {
+                return;
+            }
+
             await Task.Delay(1000);
 
             if (!Directory.Exists(PackagesFolder))
