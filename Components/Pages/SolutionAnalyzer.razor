@@ -28,9 +28,13 @@
 
             <label>Cartella Solution</label>
 
-            <input class="form-input"
-                   @bind="SolutionPath" />
-
+            <div class="folder-row">
+                <input class="form-input" @bind="SolutionPath" />
+                <button class="browse-button" type="button" @onclick="OpenPicker">
+                    📂 Sfoglia...
+                </button>
+            </div>
+            <FolderPicker @ref="picker" OnFolderSelected="OnFolderSelected" />
         </div>
 
         <button class="analyze-button"
@@ -103,6 +107,8 @@
 
     private List<ProjectReferenceInfo> References = [];
 
+    private FolderPicker picker = default!;
+
     private async Task AnalyzeAsync()
     {
         IsLoading = true;
@@ -141,4 +147,7 @@
         }
     }
 
+    private void OpenPicker() => picker.Open(SolutionPath);
+
+    private void OnFolderSelected(string path) => SolutionPath = path;
 }

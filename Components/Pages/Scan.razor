@@ -1,5 +1,4 @@
 ﻿@page "/scan"
-
 @using Pulsar.NugetManager.Models
 @using Pulsar.NugetManager.Services.Interfaces
 
@@ -21,12 +20,17 @@
 
         <div class="scan-card">
 
-            <div class="form-group">
-                <label>Cartella DLL</label>
+        <div class="form-group">
+            <label>Cartella DLL</label>
 
-                <input class="folder-input"
-                       @bind="FolderPath" />
+            <div class="folder-row">
+                <input class="folder-input" @bind="FolderPath" />
+                <button class="browse-button" type="button" @onclick="OpenPicker">
+                    📂 Sfoglia...
+                </button>
             </div>
+        <FolderPicker @ref="picker" OnFolderSelected="OnFolderSelected" />
+        </div>
 
          <button class="scan-button"
                     disabled="@IsLoading"
@@ -108,6 +112,11 @@
     private bool IsLoading = false;
 
     private bool ScanCompleted = false;
+    private FolderPicker picker = default!;
+
+    private void OpenPicker() => picker.Open(FolderPath);
+
+    private void OnFolderSelected(string path) => FolderPath = path;
 
     private async Task ScanAsync()
     {

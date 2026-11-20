@@ -1,0 +1,137 @@
+﻿@using System.IO
+
+@if (IsOpen)
+{
+    <div class="fp-overlay">
+        <div class="fp-dialog">
+
+            <div class="fp-header">Seleziona cartella</div>
+
+            <div class="fp-current">
+                <button class="fp-up" @onclick="GoUp" disabled="@(!CanGoUp)">⬆</button>
+                <span title="@CurrentPath">@(string.IsNullOrEmpty(CurrentPath) ? "Questo PC" : CurrentPath)</span>
+            </div>
+
+            <div class="fp-list">
+                @if (!string.IsNullOrEmpty(Error))
+                {
+                    <div class="fp-error">@Error</div>
+                }
+
+                @foreach (var entry in Entries)
+                {
+                    <div class="fp-item" @ondblclick="() => Navigate(entry)">
+                        📁 @GetDisplayName(entry)
+                    </div>
+                }
+
+                @foreach (var file in Files)
+                {
+                    <div class="fp-item fp-file">
+                        📄 @Path.GetFileName(file)
+                    </div>
+                }
+
+                @if (!Entries.Any() && !Files.Any() && string.IsNullOrEmpty(Error))
+                {
+                    <div class="fp-empty">Cartella vuota</div>
+                }
+            </div>
+
+            <div class="fp-footer">
+                <button class="fp-btn fp-secondary" @onclick="Close">Annulla</button>
+                <button class="fp-btn fp-primary"
+                        @onclick="Confirm"
+                        disabled="@string.IsNullOrEmpty(CurrentPath)">
+                    Seleziona
+                </button>
+            </div>
+
+        </div>
+    </div>
+}
+
+@code {
+
+    [Parameter] public EventCallback<string> OnFolderSelected { get; set; }
+
+    private bool IsOpen;
+    private string CurrentPath = string.Empty;
+    private string Error = string.Empty;
+    private List<string> Entries = [];
+    private List<string> Files = [];
+
+    private bool CanGoUp => !string.IsNullOrEmpty(CurrentPath);
+
+    public void Open(string? startPath = null)
+    {
+        IsOpen = true;
+        Load(Directory.Exists(startPath) ? startPath! : string.Empty);
+        StateHasChanged();
+    }
+
+    private void Close() => IsOpen = false;
+
+    private async Task Confirm()
+    {
+        IsOpen = false;
+        await OnFolderSelected.InvokeAsync(CurrentPath);
+    }
+
+    private void Navigate(string path) => Load(path);
+
+    private void GoUp()
+    {
+        var parent = Directory.GetParent(CurrentPath);
+        Load(parent?.FullName ?? string.Empty);   // dal root di un drive torna all'elenco dei drive
+    }
+
+    private void Load(string path)
+    {
+        Error = string.Empty;
+
+        try
+        {
+            List<string> folders;
+            List<string> files = [];
+
+            if (string.IsNullOrEmpty(path))
+            {
+                folders = DriveInfo.GetDrives()
+                                   .Where(d => d.IsReady)
+                                   .Select(d => d.Name)
+                                   .ToList();
+            }
+            else
+            {
+                folders = Directory.GetDirectories(path)
+                                   .OrderBy(p => p, StringComparer.OrdinalIgnoreCase)
+                                   .ToList();
+
+                files = Directory.GetFiles(path)
+                                 .OrderBy(p => p, StringComparer.OrdinalIgnoreCase)
+                                 .ToList();
+            }
+
+            // assegno solo se tutto è andato a buon fine
+            Entries = folders;
+            Files = files;
+            CurrentPath = path;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            Error = "Accesso negato a questa cartella.";
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+    }
+
+    private static string GetDisplayName(string path)
+    {
+        var name = Path.GetFileName(path.TrimEnd(Path.DirectorySeparatorChar));
+        return string.IsNullOrEmpty(name) ? path : name;
+    }
+
+}

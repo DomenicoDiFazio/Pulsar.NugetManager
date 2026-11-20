@@ -24,8 +24,13 @@
         <div class="form-group">
             <label>Cartella Pacchetti</label>
 
-            <input class="form-input"
-                   @bind="PackagesFolder" />
+            <div class="folder-row">
+                <input class="form-input" @bind="PackagesFolder" />
+                <button class="browse-button" type="button" @onclick="OpenPicker">
+                    📂 Sfoglia...
+                </button>
+            </div>
+            <FolderPicker @ref="picker" OnFolderSelected="OnFolderSelected" />
         </div>
 
         <button class="load-button"
@@ -219,6 +224,8 @@
 
     private bool SelectAll = true;
 
+    private FolderPicker picker = default!;
+
     protected override async Task OnInitializedAsync()
     {
         try
@@ -330,4 +337,8 @@
 
         SelectAll = Packages.All(x => x.Selected);
     }
+
+    private void OpenPicker() => picker.Open(PackagesFolder);
+
+    private void OnFolderSelected(string path) => PackagesFolder = path;
 }

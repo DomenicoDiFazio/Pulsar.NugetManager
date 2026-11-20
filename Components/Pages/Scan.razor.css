@@ -134,3 +134,26 @@
     font-weight: 600;
 }
 
+.folder-row {
+    display: flex;
+    gap: 10px;
+}
+
+    .folder-row .folder-input {
+        flex: 1;
+    }
+
+.browse-button {
+    padding: 0 18px;
+    border: 1px solid #cbd5e1;
+    background: white;
+    border-radius: 8px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+    .browse-button:hover {
+        background: #f1f5f9;
+    }
+
+

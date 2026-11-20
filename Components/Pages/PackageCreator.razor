@@ -25,15 +25,24 @@
         <div class="form-group">
             <label>Cartella DLL</label>
 
-            <input class="form-input"
-                   @bind="DllFolder" />
+            <div class="folder-row">
+                <input class="form-input" @bind="DllFolder" />
+                <button class="browse-button" type="button" @onclick="OpenDllPicker">
+                    📂 Sfoglia...
+                </button>
+            </div>
         </div>
 
         <div class="form-group">
             <label>Cartella Output</label>
 
-            <input class="form-input"
-                   @bind="OutputFolder" />
+            <div class="folder-row">
+                <input class="form-input" @bind="OutputFolder" />
+                <button class="browse-button" type="button" @onclick="OpenOutputPicker">
+                    📂 Sfoglia...
+                </button>
+            </div>
+            <FolderPicker @ref="picker" OnFolderSelected="OnFolderSelected" />
         </div>
 
         <button class="action-button"
@@ -193,6 +202,10 @@
 
     private bool SelectAll = true;
 
+    private FolderPicker picker = default!;
+
+    private bool isSelectingOutput;
+
     private async Task LoadDllsAsync()
     {
         IsLoading = true;
@@ -263,4 +276,23 @@
         }
     }
 
+    private void OpenDllPicker()
+    {
+        isSelectingOutput = false;
+        picker.Open(DllFolder);
+    }
+
+    private void OpenOutputPicker()
+    {
+        isSelectingOutput = true;
+        picker.Open(OutputFolder);
+    }
+
+    private void OnFolderSelected(string path)
+    {
+        if (isSelectingOutput)
+            OutputFolder = path;
+        else
+            DllFolder = path;
+    }
 }
