@@ -14,30 +14,14 @@ public class SolutionMigrationService : ISolutionMigrationService
         _logger = logger;
     }
 
-    public async Task<List<ProjectReferenceInfo>> AnalyzeSolutionAsync(string solutionPath)
+    public async Task<List<ProjectReferenceInfo>> AnalyzeSolutionAsync(string solutionFile)
     {
 
-        _logger.Info($"Analyzing solution folder: {solutionPath}");
+        _logger.Info($"Analyzing solution file: {solutionFile}");
 
         var results = new List<ProjectReferenceInfo>();
 
-        string solutionFile;
-
-        if (Directory.Exists(solutionPath))
-        {
-            var slnFiles = Directory.GetFiles(
-                solutionPath,
-                "*.sln",
-                SearchOption.TopDirectoryOnly);
-
-            if (slnFiles.Length == 0)
-            {
-                return results;
-            }
-
-            solutionFile = slnFiles[0];
-        }
-        else
+        if (!File.Exists(solutionFile))
         {
             return results;
         }

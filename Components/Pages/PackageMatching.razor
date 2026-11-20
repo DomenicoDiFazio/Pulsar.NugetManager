@@ -27,15 +27,15 @@
 
         <div class="form-group">
 
-            <label>Cartella Solution</label>
+            <label>File Solution (.sln)</label>
 
             <div class="folder-row">
-                <input class="form-input" @bind="SolutionPath" />
-                <button class="browse-button" type="button" @onclick="OpenPicker">
+                <input class="form-input" @bind="SolutionFile" />
+                <button class="browse-button" type="button" @onclick="OpenFilePicker">
                     📂 Sfoglia...
                 </button>
             </div>
-            <FolderPicker @ref="picker" OnFolderSelected="OnFolderSelected" />
+            <FilePicker @ref="filePicker" Filter=".sln" OnFileSelected="OnFileSelected" />
         </div>
 
         <button class="analyze-button"
@@ -121,7 +121,7 @@
 
 @code {
 
-    private string SolutionPath = string.Empty;
+    private string SolutionFile = string.Empty;
 
     private List<ProjectReferenceInfo> References = [];
 
@@ -130,7 +130,7 @@
     private bool IsLoading = false;
     private bool AnalysisCompleted = false;
 
-    private FolderPicker picker = default!;
+    private FilePicker filePicker = default!;
 
     private async Task AnalyzeAsync()
     {
@@ -142,10 +142,15 @@
             References.Clear();
             Matches.Clear();
 
+            if (string.IsNullOrEmpty(SolutionFile))
+            {
+                return;
+            }
+
             References =
                 await SolutionMigrationService
                     .AnalyzeSolutionAsync(
-                        SolutionPath);
+                        SolutionFile!);
 
             foreach (var reference in References)
             {
@@ -165,7 +170,7 @@
         }
     }
 
-    private void OpenPicker() => picker.Open(SolutionPath);
+    private void OpenFilePicker() => filePicker.Open(SolutionFile);
 
-private void OnFolderSelected(string path) => SolutionPath = path;
+    private void OnFileSelected(string file) => SolutionFile = file;
 }

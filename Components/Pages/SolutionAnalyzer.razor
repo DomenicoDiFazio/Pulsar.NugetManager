@@ -26,15 +26,15 @@
 
         <div class="form-group">
 
-            <label>Cartella Solution</label>
+            <label>File Solution (.sln)</label>
 
             <div class="folder-row">
-                <input class="form-input" @bind="SolutionPath" />
-                <button class="browse-button" type="button" @onclick="OpenPicker">
+                <input class="form-input" @bind="SolutionFile" />
+                <button class="browse-button" type="button" @onclick="OpenFilePicker">
                     📂 Sfoglia...
                 </button>
             </div>
-            <FolderPicker @ref="picker" OnFolderSelected="OnFolderSelected" />
+            <FilePicker @ref="filePicker" Filter=".sln" OnFileSelected="OnFileSelected" />
         </div>
 
         <button class="analyze-button"
@@ -97,7 +97,7 @@
 
 @code {
 
-    private string SolutionPath = string.Empty;
+    private string SolutionFile = string.Empty;
 
     private string SolutionName = string.Empty;
 
@@ -107,7 +107,7 @@
 
     private List<ProjectReferenceInfo> References = [];
 
-    private FolderPicker picker = default!;
+    private FilePicker filePicker = default!;
 
     private async Task AnalyzeAsync()
     {
@@ -118,26 +118,20 @@
         {
             References.Clear();
 
-            if (string.IsNullOrEmpty(SolutionPath))
+            if (string.IsNullOrEmpty(SolutionFile))
             {
                 return;
             }
 
-            var slnFile = Directory
-                .GetFiles(
-                    SolutionPath,
-                    "*.sln",
-                    SearchOption.TopDirectoryOnly)
-                .FirstOrDefault();
-
-            SolutionName = slnFile is null
+           
+            SolutionName = SolutionFile is null
                 ? string.Empty
-                : Path.GetFileNameWithoutExtension(slnFile);
+                : Path.GetFileNameWithoutExtension(SolutionFile);
 
             References =
                 await SolutionMigrationService
                     .AnalyzeSolutionAsync(
-                        SolutionPath);
+                        SolutionFile!);
 
             AnalysisCompleted = true;
         }
@@ -147,7 +141,7 @@
         }
     }
 
-    private void OpenPicker() => picker.Open(SolutionPath);
+    private void OpenFilePicker() => filePicker.Open(SolutionFile);
 
-    private void OnFolderSelected(string path) => SolutionPath = path;
+    private void OnFileSelected(string file) => SolutionFile = file;
 }

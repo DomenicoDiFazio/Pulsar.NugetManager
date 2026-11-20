@@ -1,0 +1,198 @@
+﻿@if (IsOpen)
+{
+    <div class="fp-overlay">
+        <div class="fp-dialog">
+
+            <div class="fp-header">@Title</div>
+
+            <div class="fp-current">
+                <button class="fp-up" @onclick="GoUp" disabled="@(!CanGoUp)">⬆</button>
+                <span title="@CurrentPath">@(string.IsNullOrEmpty(CurrentPath) ? "Questo PC" : CurrentPath)</span>
+            </div>
+
+            <div class="fp-list">
+                @if (!string.IsNullOrEmpty(Error))
+                {
+                    <div class="fp-error">@Error</div>
+                }
+
+                @foreach (var folder in Folders)
+                {
+                    <div class="fp-item" @ondblclick="() => Navigate(folder)">
+                        📁 @GetDisplayName(folder)
+                    </div>
+                }
+
+                @foreach (var file in Files)
+                {
+                    <div class="fp-item fp-file @(file == SelectedFile ? "fp-selected" : "")"
+                         @onclick="() => SelectFile(file)"
+                         @ondblclick="() => ConfirmAsync(file)">
+                        📄 @System.IO.Path.GetFileName(file)
+                    </div>
+                }
+
+                @if (!Folders.Any() && !Files.Any() && string.IsNullOrEmpty(Error))
+                {
+                    <div class="fp-empty">Nessun elemento</div>
+                }
+            </div>
+
+            @if (!string.IsNullOrEmpty(CurrentPath))
+            {
+                <div class="fp-summary">
+                    @Folders.Count cartelle · @Files.Count file
+                    @if (!string.IsNullOrWhiteSpace(Filter))
+                    {
+                        <text> (filtro: @Filter)</text>
+                    }
+                </div>
+            }
+
+            <div class="fp-selected-info">
+                File selezionato:
+                <strong>@(string.IsNullOrEmpty(SelectedFile) ? "nessuno" : System.IO.Path.GetFileName(SelectedFile))</strong>
+            </div>
+
+            <div class="fp-footer">
+                <button class="fp-btn fp-secondary" @onclick="Close">Annulla</button>
+                <button class="fp-btn fp-primary"
+                        @onclick="ConfirmAsync"
+                        disabled="@string.IsNullOrEmpty(SelectedFile)">
+                    Seleziona
+                </button>
+            </div>
+
+        </div>
+    </div>
+}
+
+@code {
+
+    // Estensioni separate da ';' (es. ".sln" oppure ".dll;.exe"). Vuoto = tutti i file.
+    [Parameter] public string? Filter { get; set; }
+
+    [Parameter] public string Title { get; set; } = "Seleziona file";
+
+    [Parameter] public EventCallback<string> OnFileSelected { get; set; }
+
+    private bool IsOpen;
+    private string CurrentPath = string.Empty;
+    private string SelectedFile = string.Empty;
+    private string Error = string.Empty;
+    private List<string> Folders = [];
+    private List<string> Files = [];
+
+    private bool CanGoUp => !string.IsNullOrEmpty(CurrentPath);
+
+    public void Open(string? startPath = null)
+    {
+        SelectedFile = string.Empty;
+
+        // Se il percorso di partenza è un file, apro la sua cartella
+        if (!string.IsNullOrWhiteSpace(startPath) && System.IO.File.Exists(startPath))
+        {
+            startPath = System.IO.Path.GetDirectoryName(startPath);
+        }
+
+        IsOpen = true;
+        Load(!string.IsNullOrWhiteSpace(startPath) && System.IO.Directory.Exists(startPath)
+            ? startPath
+            : string.Empty);
+
+        StateHasChanged();
+    }
+
+    private void Close() => IsOpen = false;
+
+    private void SelectFile(string file) => SelectedFile = file;
+
+    private async Task ConfirmAsync(string file)
+    {
+        SelectedFile = file;
+        await ConfirmAsync();
+    }
+
+    private async Task ConfirmAsync()
+    {
+        if (string.IsNullOrEmpty(SelectedFile)) return;
+
+        var result = SelectedFile;
+        IsOpen = false;
+        await OnFileSelected.InvokeAsync(result);
+    }
+
+    private void Navigate(string path)
+    {
+        SelectedFile = string.Empty;
+        Load(path);
+    }
+
+    private void GoUp()
+    {
+        SelectedFile = string.Empty;
+
+        var parent = System.IO.Directory.GetParent(CurrentPath);
+        Load(parent?.FullName ?? string.Empty);   // dal root di un drive torna all'elenco dei drive
+    }
+
+    private void Load(string path)
+    {
+        Error = string.Empty;
+
+        try
+        {
+            List<string> folders;
+            List<string> files = [];
+
+            if (string.IsNullOrEmpty(path))
+            {
+                folders = System.IO.DriveInfo.GetDrives()
+                                  .Where(d => d.IsReady)
+                                  .Select(d => d.Name)
+                                  .ToList();
+            }
+            else
+            {
+                folders = System.IO.Directory.GetDirectories(path)
+                                  .OrderBy(p => p, StringComparer.OrdinalIgnoreCase)
+                                  .ToList();
+
+                files = System.IO.Directory.GetFiles(path)
+                                  .Where(MatchesFilter)
+                                  .OrderBy(p => p, StringComparer.OrdinalIgnoreCase)
+                                  .ToList();
+            }
+
+            Folders = folders;
+            Files = files;
+            CurrentPath = path;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            Error = "Accesso negato a questa cartella.";
+        }
+        catch (Exception ex)
+        {
+            Error = ex.Message;
+        }
+    }
+
+    private bool MatchesFilter(string file)
+    {
+        if (string.IsNullOrWhiteSpace(Filter))
+            return true;
+
+        var ext = System.IO.Path.GetExtension(file);
+
+        return Filter
+            .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Any(f => string.Equals(f, ext, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static string GetDisplayName(string path)
+    {
+        var name = System.IO.Path.GetFileName(path.TrimEnd(System.IO.Path.DirectorySeparatorChar));
+        return string.IsNullOrEmpty(name) ? path : name;
+    }
+}
