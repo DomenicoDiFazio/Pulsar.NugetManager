@@ -213,6 +213,9 @@
 
         try
         {
+
+            await Task.Delay(1000);
+
             Dlls = await DllScannerService.ScanFolderAsync(DllFolder);
 
             foreach (var dll in Dlls)

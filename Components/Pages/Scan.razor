@@ -125,6 +125,8 @@
 
         try
         {
+            await Task.Delay(1000);
+
             Dlls = await DllScannerService.ScanFolderAsync(FolderPath);
 
             ScanCompleted = true;

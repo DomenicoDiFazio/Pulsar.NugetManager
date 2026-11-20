@@ -245,7 +245,7 @@
         }
     }
 
-    private Task LoadPackagesAsync()
+    private async Task LoadPackagesAsync()
     {
         IsLoading = true;
         LoadCompleted = false;
@@ -254,10 +254,12 @@
         {
             Packages.Clear();
 
+            await Task.Delay(1000);
+
             if (!Directory.Exists(PackagesFolder))
             {
                 LoadCompleted = true;
-                return Task.CompletedTask;
+                return;
             }
 
             Packages = Directory
@@ -274,7 +276,6 @@
 
             LoadCompleted = true;
 
-            return Task.CompletedTask;
         }
         finally
         {

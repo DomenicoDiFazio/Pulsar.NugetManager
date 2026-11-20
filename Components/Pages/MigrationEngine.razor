@@ -270,6 +270,8 @@
         {
             MigrationResults.Clear();
 
+            await Task.Delay(1000);
+
             MigrationResults =
                 await SolutionMigrationService
                     .MigrateAsync(
