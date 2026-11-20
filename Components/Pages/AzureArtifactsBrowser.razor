@@ -30,9 +30,7 @@
     </button>
     @if (IsLoading)
     {
-        <div class="loading-message">
-            Caricamento in corso...
-        </div>
+        <LoadingSpinner Overlay="true" />
     }
     @if (LoadCompleted && !Feeds.Any())
     {

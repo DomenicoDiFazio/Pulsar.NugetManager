@@ -67,16 +67,6 @@
         background: #15803d;
     }
 
-.loading-message {
-    margin-top: 15px;
-    padding: 12px;
-    background-color: #eff6ff;
-    border: 1px solid #bfdbfe;
-    border-radius: 6px;
-    color: #1d4ed8;
-    font-weight: 600;
-}
-
 .action-bar {
     margin-top: 20px;
 }

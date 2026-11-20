@@ -54,9 +54,7 @@
         </button>
         @if (IsLoading)
         {
-            <div class="loading-message">
-                Caricamento in corso...
-            </div>
+            <LoadingSpinner Overlay="true" />
         }
     </div>
 
@@ -132,9 +130,7 @@
 
                 @if (IsGenerating)
                 {
-                    <div class="loading-message">
-                        Generazione pacchetti in corso...
-                    </div>
+                    <LoadingSpinner Overlay="true" Text="Generazione pacchetti in corso..." />
                 }
 
                 @if (Results.Any())

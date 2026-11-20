@@ -50,9 +50,7 @@
         }
         @if (IsLoading)
         {
-            <div class="loading-message">
-                Caricamento in corso...
-            </div>
+            <LoadingSpinner Overlay="true" />
         }
     </div>
 
@@ -146,9 +144,7 @@
             </button>
             @if (IsPublishing)
                 {
-                    <div class="loading-message">
-                        Pubblicazione in corso...
-                    </div>
+                    <LoadingSpinner Overlay="true" Text="Pubblicazione in corso..." />
                 }
 
             </div>

@@ -74,6 +74,10 @@
 
             </button>
 
+            @if (IsTesting)
+            {
+                <LoadingSpinner Overlay="true" Text="Test in corso..." />
+            }
         </div>
 
 

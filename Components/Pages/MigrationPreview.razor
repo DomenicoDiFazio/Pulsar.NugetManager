@@ -50,9 +50,7 @@
 
         @if (IsLoading)
         {
-            <div class="loading-message">
-                Generazione preview in corso...
-            </div>
+            <LoadingSpinner Overlay="true" Text="Generazione preview in corso..." />
         }
         @if (!string.IsNullOrWhiteSpace(ErrorMessage))
         {

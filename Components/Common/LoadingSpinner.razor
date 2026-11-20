@@ -1,0 +1,25 @@
+﻿@if (Overlay)
+{
+    <div class="spinner-overlay">
+        <div class="spinner-box">
+            <div class="spinner"></div>
+            <span class="spinner-text">@Text</span>
+        </div>
+    </div>
+}
+else
+{
+    <div class="spinner-container">
+        <div class="spinner"></div>
+        <span class="spinner-text">@Text</span>
+    </div>
+}
+
+@code {
+
+    [Parameter] public string Text { get; set; } = "Caricamento in corso...";
+
+    // true = overlay modale a tutta pagina, false = inline
+    [Parameter] public bool Overlay { get; set; } = false;
+
+}

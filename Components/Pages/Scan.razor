@@ -42,9 +42,7 @@
 
         @if (IsLoading)
         {
-            <div class="loading-message">
-                Caricamento in corso...
-            </div>
+            <LoadingSpinner Overlay="true"/>
         }
 
         </div>
@@ -125,6 +123,9 @@
 
         try
         {
+
+            Dlls.Clear();
+
             await Task.Delay(1000);
 
             Dlls = await DllScannerService.ScanFolderAsync(FolderPath);
