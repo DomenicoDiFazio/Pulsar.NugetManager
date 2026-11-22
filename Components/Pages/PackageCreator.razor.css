@@ -6,13 +6,13 @@
     margin-bottom: 25px;
 }
 
-    .page-header h1 {
-        margin-bottom: 5px;
-    }
+.page-header h1 {
+    margin-bottom: 5px;
+}
 
-    .page-header p {
-        color: #6b7280;
-    }
+.page-header p {
+    color: #6b7280;
+}
 
 .config-card {
     background: white;
@@ -26,11 +26,11 @@
     margin-bottom: 15px;
 }
 
-    .form-group label {
-        display: block;
-        margin-bottom: 5px;
-        font-weight: 600;
-    }
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
 
 .form-input {
     width: 100%;
@@ -48,10 +48,12 @@
     cursor: pointer;
 }
 
-.result-card {
+.result-card,
+.output-card {
     background: white;
     border-radius: 12px;
     padding: 20px;
+    margin-bottom: 20px;
     box-shadow: 0 2px 8px rgba(0,0,0,.08);
 }
 
@@ -60,16 +62,16 @@
     border-collapse: collapse;
 }
 
-    .dll-table th,
-    .dll-table td {
-        padding: 12px;
-        border-bottom: 1px solid #e5e7eb;
-    }
+.dll-table th,
+.dll-table td {
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+}
 
-    .dll-table th {
-        background: #f8fafc;
-        text-align: left;
-    }
+.dll-table th {
+    background: #f8fafc;
+    text-align: left;
+}
 
 .actions {
     margin-top: 20px;
@@ -85,6 +87,15 @@
     margin-bottom: 20px;
 }
 
-    .generate-button:hover {
-        background: #15803d;
-    }
+.generate-button:hover {
+    background: #15803d;
+}
+
+.load-dll-button {
+    margin-top: 12px;
+}
+
+.output-group {
+    margin-top: 20px;
+    margin-bottom: 0;
+}

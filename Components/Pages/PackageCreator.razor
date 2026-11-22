@@ -31,31 +31,23 @@
                     📂 Sfoglia...
                 </button>
             </div>
+
+            <button class="action-button load-dll-button"
+                    disabled="@IsLoading"
+                    @onclick="LoadDllsAsync">
+                @(IsLoading
+                                ? "Caricamento..."
+                                : "Carica DLL")
+            </button>
+
+            @if (IsLoading)
+            {
+                <LoadingSpinner Overlay="true" />
+            }
         </div>
 
-        <div class="form-group">
-            <label>Cartella Output</label>
+        <FolderPicker @ref="picker" OnFolderSelected="OnFolderSelected" />
 
-            <div class="folder-row">
-                <input class="form-input" @bind="OutputFolder" />
-                <button class="browse-button" type="button" @onclick="OpenOutputPicker">
-                    📂 Sfoglia...
-                </button>
-            </div>
-            <FolderPicker @ref="picker" OnFolderSelected="OnFolderSelected" />
-        </div>
-
-        <button class="action-button"
-                disabled="@IsLoading"
-                @onclick="LoadDllsAsync">
-            @(IsLoading
-                        ? "Caricamento..."
-                        : "Carica DLL")
-        </button>
-        @if (IsLoading)
-        {
-            <LoadingSpinner Overlay="true" />
-        }
     </div>
 
     @if (Dlls.Any())
@@ -86,89 +78,82 @@
                     @foreach (var dll in Dlls)
                     {
                         <tr>
-
                             <td>
-                                <input type="checkbox"
-                                       @bind="dll.Selected" />
+                                <input type="checkbox" @bind="dll.Selected" />
                             </td>
-
-                            <td>
-                                @dll.Name
-                            </td>
-
-                            <td>
-                                @dll.Version
-                            </td>
-
-                            <td>
-                                @FormatFileSize(dll.FileSize)
-                            </td>
-
+                            <td>@dll.Name</td>
+                            <td>@dll.Version</td>
+                            <td>@FormatFileSize(dll.FileSize)</td>
                         </tr>
                     }
 
-                </tbody>
+            </tbody>
 
-            </table>
+        </table>
 
-            <div class="actions">
+    </div>
 
-            <button class="generate-button"
-                    disabled="@IsGenerating"
-                    @onclick="GeneratePackagesAsync">
-                @(IsGenerating
-                                ? "Generazione..."
-                                : "Genera Pacchetti")
-            </button>
+    <div class="output-card">
 
-                @if (IsGenerating)
-                {
-                    <LoadingSpinner Overlay="true" Text="Generazione pacchetti in corso..." />
-                }
+        <div class="form-group">
+            <label>Cartella Output</label>
 
-                @if (Results.Any())
-                {
-                    <div class="result-card mt-3">
-
-                        <h4>Risultati</h4>
-
-                        <table class="dll-table">
-
-                            <thead>
-                                <tr>
-                                    <th>Pacchetto</th>
-                                    <th>Esito</th>
-                                    <th>Percorso</th>
-                                </tr>
-                            </thead>
-
-                            <tbody>
-
-                                @foreach (var result in Results)
-                                {
-                                    <tr>
-                                        <td>@result.PackageName</td>
-
-                                        <td>
-                                            @(result.Success ? "OK" : "KO")
-                                        </td>
-
-                                        <td>
-                                            @(result.Success ? result.PackagePath: result.ErrorMessage)
-                                        </td>
-                                    </tr>
-                                }
-
-                            </tbody>
-
-                        </table>
-
-                    </div>
-                }
-
+            <div class="folder-row">
+                <input class="form-input" @bind="OutputFolder" />
+                <button class="browse-button" type="button" @onclick="OpenOutputPicker">
+                    📂 Sfoglia...
+                </button>
             </div>
+        </div>
+
+        <button class="generate-button"
+                disabled="@IsGenerating"
+                @onclick="GeneratePackagesAsync">
+            @(IsGenerating
+                        ? "Generazione..."
+                        : "Genera Pacchetti")
+        </button>
+
+        @if (IsGenerating)
+            {
+                <LoadingSpinner Overlay="true" Text="Generazione pacchetti in corso..." />
+            }
 
         </div>
+
+        @if (Results.Any())
+        {
+            <div class="result-card">
+
+                <h4>Risultati</h4>
+
+                <table class="dll-table">
+
+                    <thead>
+                        <tr>
+                            <th>Pacchetto</th>
+                            <th>Esito</th>
+                            <th>Percorso</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var result in Results)
+                        {
+                            <tr>
+                                <td>@result.PackageName</td>
+                                <td>@(result.Success ? "OK" : "KO")</td>
+                                <td>@(result.Success? result.PackagePath: result.ErrorMessage)</td>
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        }
     }
     <MessageDialog @ref="messageDialog" />
 </div>
