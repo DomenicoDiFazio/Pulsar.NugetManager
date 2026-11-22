@@ -79,39 +79,19 @@
                 <LoadingSpinner Overlay="true" Text="Test in corso..." />
             }
         </div>
-
-
-        @if (!string.IsNullOrWhiteSpace(Message))
-        {
-            <div class="message">
-                @Message
-            </div>
-        }
-
-        @if (!string.IsNullOrWhiteSpace(TestMessage))
-        {
-            <div class="@(ConnectionOk ? "success-box" : "error-box")">
-                @TestMessage
-            </div>
-        }
-
     </div>
-
+    <MessageDialog @ref="messageDialog" />
 </div>
 
 @code {
 
     private AzureDevOpsSettings Settings = new();
 
-    private string Message = string.Empty;
-
     private bool ShowPatToken;
 
     private bool IsTesting = false;
 
-    private bool ConnectionOk = false;
-
-    private string TestMessage = string.Empty;
+    private MessageDialog messageDialog = default!;
 
     protected override async Task OnInitializedAsync()
     {
@@ -120,9 +100,16 @@
 
     private async Task SaveAsync()
     {
-        await AzureDevOpsService.SaveSettingsAsync(Settings);
+        try
+        {
+            await AzureDevOpsService.SaveSettingsAsync(Settings);
 
-        Message = "Configurazione salvata.";
+            messageDialog.Show("Configurazione salvata.", MessageType.Information);
+        }
+        catch (Exception ex)
+        {
+            messageDialog.Show(ex.Message, MessageType.Error, "Errore nel salvataggio");
+        }
     }
 
     private void TogglePatVisibility()
@@ -136,25 +123,22 @@
 
         try
         {
-            Message = string.Empty;
-            TestMessage = string.Empty;
-            ConnectionOk = false;
-
             await AzureDevOpsService.SaveSettingsAsync(Settings);
 
-            var feeds =
-                await AzureDevOpsService.GetFeedsAsync();
+            var feeds = await AzureDevOpsService.GetFeedsAsync();
 
-            ConnectionOk = true;
+            IsTesting = false;
 
-            TestMessage =
-                $"Connessione riuscita. Feed trovati: {feeds.Count}";
+            messageDialog.Show(
+                $"Connessione riuscita. Feed trovati: {feeds.Count}",
+                MessageType.Information,
+                "Test connessione");
         }
         catch (Exception ex)
         {
-            ConnectionOk = false;
+            IsTesting = false;
 
-            TestMessage = ex.Message;
+            messageDialog.Show(ex.Message, MessageType.Error, "Test connessione fallito");
         }
         finally
         {

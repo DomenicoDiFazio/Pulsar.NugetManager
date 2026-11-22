@@ -32,19 +32,7 @@
     {
         <LoadingSpinner Overlay="true" />
     }
-    @if (LoadCompleted && !Feeds.Any())
-    {
-        <div class="warning-message">
-            Nessun feed Azure Artifacts trovato.
-        </div>
-    }
-    @if (!string.IsNullOrWhiteSpace(Error))
-    {
-        <div class="error-box">
-            @Error
-        </div>
-    }
-
+   
     @if (Feeds.Any())
     {
         <div class="result-card">
@@ -76,41 +64,43 @@
 
         </div>
     }
-
+    <MessageDialog @ref="messageDialog" />
 </div>
 
 @code {
 
     private List<AzureFeedInfo> Feeds = [];
 
-    private string Error = string.Empty;
-
     private bool IsLoading = false;
 
-    private bool LoadCompleted = false;
+    private MessageDialog messageDialog = default!;
 
     private async Task LoadFeedsAsync()
     {
         IsLoading = true;
-        LoadCompleted = false;
+        Feeds.Clear();
 
         try
         {
-            Error = string.Empty;
-
-            Feeds.Clear();
-
             Feeds = await AzureDevOpsService.GetFeedsAsync();
-
-            LoadCompleted = true;
         }
         catch (Exception ex)
         {
-            Error = ex.Message;
+            IsLoading = false;
+
+            messageDialog.Show(ex.Message, MessageType.Error, "Errore nel caricamento dei feed");
+            return;
         }
         finally
         {
             IsLoading = false;
+        }
+
+        if (!Feeds.Any())
+        {
+            messageDialog.Show(
+                "Nessun feed Azure Artifacts trovato.",
+                MessageType.Warning);
         }
     }
 

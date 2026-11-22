@@ -42,12 +42,6 @@
                         : "Carica Pacchetti")
 
         </button>
-        @if (LoadCompleted && !Packages.Any())
-        {
-            <div class="warning-message">
-                Nessun pacchetto .nupkg trovato nella cartella selezionata.
-            </div>
-        }
         @if (IsLoading)
         {
             <LoadingSpinner Overlay="true" />
@@ -74,19 +68,7 @@
             </div>
         </div>
     }
-    @if (!string.IsNullOrWhiteSpace(FeedError))
-    {
-        <div class="error-box">
-            @FeedError
-        </div>
-    }
-    @if (FeedsLoaded && !Feeds.Any())
-    {
-        <div class="warning-message">
-            Nessun Feed Azure Artifacts disponibile.
-        </div>
-    }
-
+   
     @if (Packages.Any())
     {
         <div class="result-card">
@@ -190,10 +172,9 @@
                 </tbody>
 
             </table>
-
         </div>
     }
-
+    <MessageDialog @ref="messageDialog" />
 </div>
 
 @code {
@@ -212,15 +193,15 @@
 
     private bool IsPublishing = false;
 
-    private bool LoadCompleted = false;
-
-    private bool FeedsLoaded = false;
-
-    private string FeedError = string.Empty;
-
     private bool SelectAll = true;
 
     private FolderPicker picker = default!;
+
+    private MessageDialog messageDialog = default!;
+
+    private bool feedsMessagePending;
+    private string? feedsMessage;
+    private MessageType feedsMessageType;
 
     protected override async Task OnInitializedAsync()
     {
@@ -228,41 +209,40 @@
         {
             Feeds = await AzureDevOpsService.GetFeedsAsync();
 
-            FeedsLoaded = true;
-
             if (Feeds.Any())
             {
                 SelectedFeed = Feeds.First().Name;
             }
+            else
+            {
+                feedsMessagePending = true;
+                feedsMessage = "Nessun Feed Azure Artifacts disponibile.";
+                feedsMessageType = MessageType.Warning;
+            }
         }
         catch (Exception ex)
         {
-            FeedError = ex.Message;
+            feedsMessagePending = true;
+            feedsMessage = ex.Message;
+            feedsMessageType = MessageType.Error;
         }
     }
 
     private async Task LoadPackagesAsync()
     {
+        if (string.IsNullOrWhiteSpace(PackagesFolder) || !Directory.Exists(PackagesFolder))
+        {
+            messageDialog.Show("Seleziona una cartella valida.", MessageType.Warning);
+            return;
+        }
+
         IsLoading = true;
-        LoadCompleted = false;
+        Packages.Clear();
+        Results.Clear();
 
         try
         {
-            Packages.Clear();
-            Results.Clear();
-
-            if (string.IsNullOrEmpty(PackagesFolder))
-            {
-                return;
-            }
-
             await Task.Delay(1000);
-
-            if (!Directory.Exists(PackagesFolder))
-            {
-                LoadCompleted = true;
-                return;
-            }
 
             Packages = Directory
                 .GetFiles(PackagesFolder, "*.nupkg")
@@ -275,24 +255,46 @@
                 .ToList();
 
             SelectAll = true;
+        }
+        catch (Exception ex)
+        {
+            IsLoading = false;
 
-            LoadCompleted = true;
-
+            messageDialog.Show(ex.Message, MessageType.Error, "Errore durante il caricamento");
+            return;
         }
         finally
         {
             IsLoading = false;
         }
+
+        if (!Packages.Any())
+        {
+            messageDialog.Show(
+                "Nessun pacchetto .nupkg trovato nella cartella selezionata.",
+                MessageType.Warning);
+        }
     }
 
     private async Task PublishPackagesAsync()
     {
+        if (string.IsNullOrWhiteSpace(SelectedFeed))
+        {
+            messageDialog.Show("Seleziona un feed Azure Artifacts.", MessageType.Warning);
+            return;
+        }
+
+        if (!Packages.Any(p => p.Selected))
+        {
+            messageDialog.Show("Seleziona almeno un pacchetto.", MessageType.Warning);
+            return;
+        }
+
         IsPublishing = true;
+        Results.Clear();
 
         try
         {
-            Results.Clear();
-
             foreach (var package in Packages.Where(x => x.Selected))
             {
                 try
@@ -322,6 +324,23 @@
         {
             IsPublishing = false;
         }
+
+        var failed = Results.Count(r => !r.Success);
+
+        if (failed == 0)
+        {
+            messageDialog.Show(
+                $"Pubblicati correttamente {Results.Count} pacchetti.",
+                MessageType.Information,
+                "Pubblicazione completata");
+        }
+        else
+        {
+            messageDialog.Show(
+                $"{Results.Count - failed} pacchetti pubblicati, {failed} falliti. Controlla i dettagli nella tabella dei risultati.",
+                MessageType.Warning,
+                "Pubblicazione completata con errori");
+        }
     }
 
     private void ToggleSelectAll(ChangeEventArgs e)
@@ -344,4 +363,16 @@
     private void OpenPicker() => picker.Open(PackagesFolder);
 
     private void OnFolderSelected(string path) => PackagesFolder = path;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        // Il dialog non esiste ancora durante OnInitializedAsync:
+        // il messaggio viene mostrato dopo il primo rendering.
+        if (feedsMessagePending && messageDialog is not null)
+        {
+            feedsMessagePending = false;
+            messageDialog.Show(feedsMessage!, feedsMessageType, "Feed Azure Artifacts");
+        }
+    }
+
 }

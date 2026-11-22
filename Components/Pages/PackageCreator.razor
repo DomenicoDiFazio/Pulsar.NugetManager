@@ -58,13 +58,6 @@
         }
     </div>
 
-    @if (LoadCompleted && !Dlls.Any())
-    {
-        <div class="warning-message">
-            Nessuna DLL trovata nella cartella selezionata.
-        </div>
-    }
-
     @if (Dlls.Any())
     {
         <div class="result-card">
@@ -177,7 +170,7 @@
 
         </div>
     }
-
+    <MessageDialog @ref="messageDialog" />
 </div>
 
 @code {
@@ -192,8 +185,6 @@
 
     private bool IsLoading = false;
 
-    private bool LoadCompleted = false;
-
     private bool IsGenerating = false;
 
     private bool SelectAll = true;
@@ -202,20 +193,22 @@
 
     private bool isSelectingOutput;
 
+    private MessageDialog messageDialog = default!;
+
     private async Task LoadDllsAsync()
     {
+        if (string.IsNullOrWhiteSpace(DllFolder) || !Directory.Exists(DllFolder))
+        {
+            messageDialog.Show("Seleziona una cartella DLL valida.", MessageType.Warning);
+            return;
+        }
+
         IsLoading = true;
-        LoadCompleted = false;
+        Dlls.Clear();
+        Results.Clear();
 
         try
         {
-            Dlls.Clear();
-
-            if (string.IsNullOrEmpty(DllFolder))
-            {
-                return;
-            }
-
             await Task.Delay(1000);
 
             Dlls = await DllScannerService.ScanFolderAsync(DllFolder);
@@ -226,12 +219,25 @@
             }
 
             SelectAll = true;
+        
+        }
+        catch (Exception ex)
+        {
+            IsLoading = false;
 
-            LoadCompleted = true;
+            messageDialog.Show(ex.Message, MessageType.Error, "Errore durante il caricamento");
+            return;
         }
         finally
         {
             IsLoading = false;
+        }
+
+        if (!Dlls.Any())
+        {
+            messageDialog.Show(
+                "Nessuna DLL trovata nella cartella selezionata.",
+                MessageType.Warning);
         }
     }
 
@@ -254,25 +260,52 @@
 
     private async Task GeneratePackagesAsync()
     {
+        if (!Dlls.Any(d => d.Selected))
+        {
+            messageDialog.Show("Seleziona almeno una DLL.", MessageType.Warning);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(OutputFolder) || !Directory.Exists(OutputFolder))
+        {
+            messageDialog.Show("Seleziona una cartella di output valida.", MessageType.Warning);
+            return;
+        }
+
         IsGenerating = true;
+        Results.Clear();
 
         try
         {
-            Results.Clear();
+            Results = await NugetPackageService.CreatePackagesAsync(Dlls, OutputFolder);
+        }
+        catch (Exception ex)
+        {
+            IsGenerating = false;
 
-            if (string.IsNullOrEmpty(OutputFolder))
-            {
-                return;
-            }
-
-            Results = await NugetPackageService
-                .CreatePackagesAsync(
-                    Dlls,
-                    OutputFolder);
+            messageDialog.Show(ex.Message, MessageType.Error, "Errore durante la generazione");
+            return;
         }
         finally
         {
             IsGenerating = false;
+        }
+
+        var failed = Results.Count(r => !r.Success);
+
+        if (failed == 0)
+        {
+            messageDialog.Show(
+                $"Generati correttamente {Results.Count} pacchetti.",
+                MessageType.Information,
+                "Generazione completata");
+        }
+        else
+        {
+            messageDialog.Show(
+                $"{Results.Count - failed} pacchetti generati, {failed} falliti. Controlla i dettagli nella tabella dei risultati.",
+                MessageType.Warning,
+                "Generazione completata con errori");
         }
     }
 

@@ -1,0 +1,88 @@
+﻿.md-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 3000;
+}
+
+.md-dialog {
+    background: white;
+    width: 460px;
+    max-width: 90vw;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    border-top: 6px solid #2563eb;
+    overflow: hidden;
+}
+
+.md-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 22px 8px 22px;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.md-icon {
+    font-size: 22px;
+}
+
+.md-body {
+    padding: 8px 22px 20px 22px;
+    font-size: 15px;
+    color: #334155;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 50vh;
+    overflow-y: auto;
+}
+
+.md-footer {
+    display: flex;
+    justify-content: flex-end;
+    padding: 12px 22px 18px 22px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.md-button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 28px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.md-button:hover {
+    background: #1d4ed8;
+}
+
+/* Varianti per tipo */
+.md-warning {
+    border-top-color: #f59e0b;
+}
+
+.md-warning .md-button {
+    background: #f59e0b;
+}
+
+.md-warning .md-button:hover {
+    background: #d97706;
+}
+
+.md-error {
+    border-top-color: #dc2626;
+}
+
+.md-error .md-button {
+    background: #dc2626;
+}
+
+.md-error .md-button:hover {
+    background: #b91c1c;
+}

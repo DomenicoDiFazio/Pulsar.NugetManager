@@ -51,12 +51,7 @@
             <LoadingSpinner Overlay="true" Text="Analisi in corso..." />
         }
     </div>
-    @if (AnalysisCompleted && !References.Any())
-    {
-        <div class="warning-message">
-            Nessun riferimento DLL trovato nella solution selezionata.
-        </div>
-    }
+    
     @if (References.Any())
     {
         <div class="result-card">
@@ -90,7 +85,7 @@
 
         </div>
     }
-
+    <MessageDialog @ref="messageDialog" />
 </div>
 
 @code {
@@ -101,41 +96,46 @@
 
     private bool IsLoading = false;
 
-    private bool AnalysisCompleted = false;
-
     private List<ProjectReferenceInfo> References = [];
 
     private FilePicker filePicker = default!;
+    
+    private MessageDialog messageDialog = default!;
 
     private async Task AnalyzeAsync()
     {
+        if (string.IsNullOrWhiteSpace(SolutionFile) || !File.Exists(SolutionFile))
+        {
+            messageDialog.Show("Seleziona un file solution (.sln) valido.", MessageType.Warning);
+            return;
+        }
+
         IsLoading = true;
-        AnalysisCompleted = false;
+        References.Clear();
 
         try
         {
-            References.Clear();
+            SolutionName = Path.GetFileNameWithoutExtension(SolutionFile);
 
-            if (string.IsNullOrEmpty(SolutionFile))
-            {
-                return;
-            }
+            References = await SolutionMigrationService.AnalyzeSolutionAsync(SolutionFile);
+        }
+        catch (Exception ex)
+        {
+            IsLoading = false;
 
-           
-            SolutionName = SolutionFile is null
-                ? string.Empty
-                : Path.GetFileNameWithoutExtension(SolutionFile);
-
-            References =
-                await SolutionMigrationService
-                    .AnalyzeSolutionAsync(
-                        SolutionFile!);
-
-            AnalysisCompleted = true;
+            messageDialog.Show(ex.Message, MessageType.Error, "Errore durante l'analisi");
+            return;
         }
         finally
         {
             IsLoading = false;
+        }
+
+        if (!References.Any())
+        {
+            messageDialog.Show(
+                "Nessun riferimento DLL trovato nella solution selezionata.",
+                MessageType.Warning);
         }
     }
 

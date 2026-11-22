@@ -52,19 +52,8 @@
         {
             <LoadingSpinner Overlay="true" Text="Analisi in corso..." />
         }
-        @if (!string.IsNullOrWhiteSpace(ErrorMessage))
-        {
-            <div class="error-box">
-                @ErrorMessage
-            </div>
-        }
     </div>
-    @if (AnalysisCompleted && !Previews.Any())
-    {
-        <div class="warning-message">
-            Nessuna migrazione disponibile per la solution selezionata.
-        </div>
-    }
+    
     @if (Previews.Any())
     {
         <div class="result-card">
@@ -183,7 +172,7 @@
 
         </div>
     }
-
+    <MessageDialog @ref="messageDialog" />
 </div>
 
 @code {
@@ -192,11 +181,7 @@
 
     private bool IsLoading = false;
 
-    private bool AnalysisCompleted = false;
-
     private bool IsMigrating = false;
-
-    private string ErrorMessage = string.Empty;
 
     private List<ProjectReferenceInfo> References = [];
 
@@ -208,74 +193,99 @@
 
     private FilePicker filePicker = default!;
 
+    private MessageDialog messageDialog = default!;
+
     private async Task AnalyzeAsync()
     {
+        if (string.IsNullOrWhiteSpace(SolutionFile) || !File.Exists(SolutionFile))
+        {
+            messageDialog.Show("Seleziona un file solution (.sln) valido.", MessageType.Warning);
+            return;
+        }
+
         IsLoading = true;
-        AnalysisCompleted = false;
-        ErrorMessage = string.Empty;
+        References.Clear();
+        Matches.Clear();
+        Previews.Clear();
+        MigrationResults.Clear();
 
         try
         {
-            References.Clear();
-            Matches.Clear();
-            Previews.Clear();
-
-            if (string.IsNullOrEmpty(SolutionFile))
-            {
-                return;
-            }
-
-            References =
-                await SolutionMigrationService
-                    .AnalyzeSolutionAsync(
-                        SolutionFile!);
+            References = await SolutionMigrationService.AnalyzeSolutionAsync(SolutionFile);
 
             foreach (var reference in References)
             {
-                var match =
-                    await AzureDevOpsService
-                        .FindPackageMatchAsync(
-                            reference.ReferenceName);
+                var match = await AzureDevOpsService.FindPackageMatchAsync(reference.ReferenceName);
 
                 Matches.Add(match);
             }
 
-            Previews =
-                await SolutionMigrationService
-                    .GeneratePreviewAsync(
-                        References,
-                        Matches);
-
-            AnalysisCompleted = true;
+            Previews = await SolutionMigrationService.GeneratePreviewAsync(References, Matches);
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            IsLoading = false;
+
+            messageDialog.Show(ex.Message, MessageType.Error, "Errore durante l'analisi");
+            return;
         }
         finally
         {
             IsLoading = false;
         }
+
+        if (!Previews.Any())
+        {
+            messageDialog.Show(
+                "Nessuna migrazione disponibile per la solution selezionata.",
+                MessageType.Warning);
+        }
     }
 
     private async Task ExecuteMigrationAsync()
     {
+        if (!Previews.Any())
+        {
+            messageDialog.Show("Nessuna migrazione da eseguire.", MessageType.Warning);
+            return;
+        }
+
         IsMigrating = true;
+        MigrationResults.Clear();
 
         try
         {
-            MigrationResults.Clear();
-
             await Task.Delay(1000);
 
-            MigrationResults =
-                await SolutionMigrationService
-                    .MigrateAsync(
-                        Previews);
+            MigrationResults = await SolutionMigrationService.MigrateAsync(Previews);
+        }
+        catch (Exception ex)
+        {
+            IsMigrating = false;
+
+            messageDialog.Show(ex.Message, MessageType.Error, "Errore durante la migrazione");
+            return;
         }
         finally
         {
             IsMigrating = false;
+        }
+
+        var failed = MigrationResults.Count(r => !r.Success);
+
+        if (failed == 0)
+        {
+            messageDialog.Show(
+                $"Migrazione completata: {MigrationResults.Count} riferimenti convertiti.",
+                MessageType.Information,
+                "Migrazione completata");
+        }
+        else
+        {
+            messageDialog.Show(
+                $"{MigrationResults.Count - failed} riferimenti migrati, {failed} falliti. Controlla i dettagli nella tabella dei risultati.",
+                MessageType.Warning,
+                "Migrazione completata con errori");
         }
     }
 

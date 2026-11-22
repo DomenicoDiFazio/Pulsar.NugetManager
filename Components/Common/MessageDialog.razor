@@ -1,0 +1,64 @@
+﻿@if (IsOpen)
+{
+    <div class="md-overlay">
+        <div class="md-dialog md-@Type.ToString().ToLower()">
+
+            <div class="md-header">
+                <span class="md-icon">@Icon</span>
+                <span class="md-title">@(Title ?? DefaultTitle)</span>
+            </div>
+
+            <div class="md-body">
+                @Message
+            </div>
+
+            <div class="md-footer">
+                <button class="md-button" @onclick="CloseAsync">OK</button>
+            </div>
+
+        </div>
+    </div>
+}
+
+@code {
+
+    [Parameter] public EventCallback OnClosed { get; set; }
+
+    private bool IsOpen;
+
+    private string Message = string.Empty;
+
+    private string? Title;
+
+    private MessageType Type = MessageType.Information;
+
+    private string Icon => Type switch
+    {
+        MessageType.Error => "⛔",
+        MessageType.Warning => "⚠️",
+        _ => "ℹ️"
+    };
+
+    private string DefaultTitle => Type switch
+    {
+        MessageType.Error => "Errore",
+        MessageType.Warning => "Attenzione",
+        _ => "Informazione"
+    };
+
+    public void Show(string message, MessageType type = MessageType.Information, string? title = null)
+    {
+        Message = message;
+        Type = type;
+        Title = title;
+        IsOpen = true;
+
+        StateHasChanged();
+    }
+
+    private async Task CloseAsync()
+    {
+        IsOpen = false;
+        await OnClosed.InvokeAsync();
+    }
+}

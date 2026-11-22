@@ -44,15 +44,7 @@
         {
             <LoadingSpinner Overlay="true"/>
         }
-
         </div>
-
-        @if (ScanCompleted && !Dlls.Any())
-        {
-            <div class="warning-message">
-                Nessuna DLL trovata nella cartella selezionata.
-            </div>
-        }
 
         @if (Dlls.Any())
         {
@@ -98,6 +90,7 @@
                 </div>
             </div>
         }
+        <MessageDialog @ref="messageDialog" />
     </div>
 
 
@@ -116,31 +109,47 @@
 
     private void OnFolderSelected(string path) => FolderPath = path;
 
+    private MessageDialog messageDialog = default!;
+
     private async Task ScanAsync()
     {
+        if (string.IsNullOrWhiteSpace(FolderPath) || !Directory.Exists(FolderPath))
+        {
+            messageDialog.Show(
+                "Seleziona una cartella valida.",
+                MessageType.Warning);
+            return;
+        }
+
         IsLoading = true;
         ScanCompleted = false;
+        Dlls.Clear();
 
         try
         {
-
-            Dlls.Clear();
-
-            if (string.IsNullOrEmpty(FolderPath))
-            {
-                return;
-            }
-
             await Task.Delay(1000);
 
             Dlls = await DllScannerService.ScanFolderAsync(FolderPath);
 
             ScanCompleted = true;
-            
+        }
+        catch (Exception ex)
+        {
+            IsLoading = false;
+
+            messageDialog.Show(ex.Message, MessageType.Error, "Errore durante la scansione");
+            return;
         }
         finally
         {
             IsLoading = false;
+        }
+
+        if (!Dlls.Any())
+        {
+            messageDialog.Show(
+                "Nessuna DLL trovata nella cartella selezionata.",
+                MessageType.Warning);
         }
     }
 

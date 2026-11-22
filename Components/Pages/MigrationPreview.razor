@@ -52,20 +52,8 @@
         {
             <LoadingSpinner Overlay="true" Text="Generazione preview in corso..." />
         }
-        @if (!string.IsNullOrWhiteSpace(ErrorMessage))
-        {
-            <div class="error-box">
-                @ErrorMessage
-            </div>
-        }
     </div>
-    @if (PreviewCompleted && !Previews.Any())
-    {
-        <div class="warning-message">
-            Nessuna migrazione disponibile per la solution selezionata.
-        </div>
-    }
-
+    
     @if (Previews.Any())
     {
         <div class="result-card">
@@ -151,7 +139,7 @@
             </div>
         }
     }
-
+    <MessageDialog @ref="messageDialog" />
 </div>
 
 @code {
@@ -160,65 +148,59 @@
 
     private bool IsLoading = false;
 
-    private bool PreviewCompleted = false;
-
     private List<ProjectReferenceInfo> References = [];
 
     private List<PackageMatchInfo> Matches = [];
 
     private List<MigrationPreviewInfo> Previews = [];
 
-    private string ErrorMessage = string.Empty;
-
     private FilePicker filePicker = default!;
+
+    private MessageDialog messageDialog = default!;
 
     private async Task GeneratePreviewAsync()
     {
+        if (string.IsNullOrWhiteSpace(SolutionFile) || !File.Exists(SolutionFile))
+        {
+            messageDialog.Show("Seleziona un file solution (.sln) valido.", MessageType.Warning);
+            return;
+        }
+
         IsLoading = true;
-        PreviewCompleted = false;
-        ErrorMessage = string.Empty;
+        References.Clear();
+        Matches.Clear();
+        Previews.Clear();
 
         try
         {
-            References.Clear();
-            Matches.Clear();
-            Previews.Clear();
-
-            if (string.IsNullOrEmpty(SolutionFile))
-            {
-                return;
-            }
-
-            References =
-                await SolutionMigrationService
-                    .AnalyzeSolutionAsync(
-                        SolutionFile);
+            References = await SolutionMigrationService.AnalyzeSolutionAsync(SolutionFile);
 
             foreach (var reference in References)
             {
-                var match =
-                    await AzureDevOpsService
-                        .FindPackageMatchAsync(
-                            reference.ReferenceName);
+                var match = await AzureDevOpsService.FindPackageMatchAsync(reference.ReferenceName);
 
                 Matches.Add(match);
             }
 
-            Previews =
-                await SolutionMigrationService
-                    .GeneratePreviewAsync(
-                        References,
-                        Matches);
-
-            PreviewCompleted = true;
+            Previews = await SolutionMigrationService.GeneratePreviewAsync(References, Matches);
         }
         catch (Exception ex)
         {
-            ErrorMessage = ex.Message;
+            IsLoading = false;
+
+            messageDialog.Show(ex.Message, MessageType.Error, "Errore durante la generazione della preview");
+            return;
         }
         finally
         {
             IsLoading = false;
+        }
+
+        if (!Previews.Any())
+        {
+            messageDialog.Show(
+                "Nessuna migrazione disponibile per la solution selezionata.",
+                MessageType.Warning);
         }
     }
 

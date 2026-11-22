@@ -54,12 +54,7 @@
         }
 
     </div>
-    @if (AnalysisCompleted && !Matches.Any())
-    {
-        <div class="warning-message">
-            Nessun riferimento DLL trovato nella solution selezionata.
-        </div>
-    }
+   
     @if (Matches.Any())
     {
         <div class="result-card">
@@ -114,7 +109,7 @@
 
         </div>
     }
-
+    <MessageDialog @ref="messageDialog" />
 </div>
 
 @code {
@@ -126,45 +121,69 @@
     private List<PackageMatchInfo> Matches = [];
 
     private bool IsLoading = false;
-    private bool AnalysisCompleted = false;
 
     private FilePicker filePicker = default!;
 
+    private MessageDialog messageDialog = default!;
+
     private async Task AnalyzeAsync()
     {
+        if (string.IsNullOrWhiteSpace(SolutionFile) || !File.Exists(SolutionFile))
+        {
+            messageDialog.Show("Seleziona un file solution (.sln) valido.", MessageType.Warning);
+            return;
+        }
+
         IsLoading = true;
-        AnalysisCompleted = false;
+        References.Clear();
+        Matches.Clear();
 
         try
         {
-            References.Clear();
-            Matches.Clear();
-
-            if (string.IsNullOrEmpty(SolutionFile))
-            {
-                return;
-            }
-
-            References =
-                await SolutionMigrationService
-                    .AnalyzeSolutionAsync(
-                        SolutionFile!);
+            References = await SolutionMigrationService.AnalyzeSolutionAsync(SolutionFile);
 
             foreach (var reference in References)
             {
-                var match =
-                    await AzureDevOpsService
-                        .FindPackageMatchAsync(
-                            reference.ReferenceName);
+                var match = await AzureDevOpsService.FindPackageMatchAsync(reference.ReferenceName);
 
                 Matches.Add(match);
             }
+        }
+        catch (Exception ex)
+        {
+            IsLoading = false;
 
-            AnalysisCompleted = true;
+            messageDialog.Show(ex.Message, MessageType.Error, "Errore durante l'analisi");
+            return;
         }
         finally
         {
             IsLoading = false;
+        }
+
+        if (!Matches.Any())
+        {
+            messageDialog.Show(
+                "Nessun riferimento DLL trovato nella solution selezionata.",
+                MessageType.Warning);
+            return;
+        }
+
+        var notFound = Matches.Count(m => !m.MatchFound);
+
+        if (notFound == 0)
+        {
+            messageDialog.Show(
+                $"Tutti i {Matches.Count} riferimenti hanno un pacchetto corrispondente nei feed.",
+                MessageType.Information,
+                "Analisi completata");
+        }
+        else
+        {
+            messageDialog.Show(
+                $"{Matches.Count - notFound} riferimenti con match, {notFound} non trovati. Controlla i dettagli nella tabella.",
+                MessageType.Warning,
+                "Analisi completata");
         }
     }
 
