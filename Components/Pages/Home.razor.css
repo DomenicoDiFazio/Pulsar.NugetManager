@@ -53,3 +53,15 @@
     aspect-ratio: 1482 / 529; /* proporzioni del tuo PNG */
     object-fit: cover;
 }
+
+.feature-icon {
+    display: block;
+    height: 40px;
+    width: auto; /* mantiene le proporzioni di ogni icona */
+    margin-bottom: 12px;
+    transition: transform 0.15s ease;
+}
+
+.feature-card:hover .feature-icon {
+    transform: scale(1.1);
+}
