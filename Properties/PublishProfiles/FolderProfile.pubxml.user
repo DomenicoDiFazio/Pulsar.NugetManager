@@ -3,7 +3,7 @@
 <Project>
   <PropertyGroup>
     <_PublishTargetUrl>C:\Progetti\Pulsar\NugetManager\Pulsar.NugetManager\bin\Release\net9.0\publish\</_PublishTargetUrl>
-    <History>True|2026-11-23T10:23:48.1437947Z||;</History>
+    <History>True|2026-11-23T11:57:00.8328473Z||;True|2026-11-23T11:23:48.1437947+01:00||;</History>
     <LastFailureDetails />
   </PropertyGroup>
 </Project>

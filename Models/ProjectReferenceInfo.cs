@@ -10,4 +10,6 @@ public class ProjectReferenceInfo
     public string ReferenceName { get; set; } = string.Empty;
 
     public string ReferencePath { get; set; } = string.Empty;
+
+    public string DllVersion { get; set; } = string.Empty;
 }

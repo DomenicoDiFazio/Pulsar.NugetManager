@@ -21,4 +21,6 @@ public class MigrationPreviewInfo
     public string CurrentReferenceXml { get; set; } = string.Empty;
 
     public string NewReferenceXml { get; set; } = string.Empty;
+
+    public string DllVersion { get; set; } = string.Empty;
 }

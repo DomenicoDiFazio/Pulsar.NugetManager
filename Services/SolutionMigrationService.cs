@@ -1,7 +1,8 @@
-﻿using System.Text.RegularExpressions;
-using System.Xml.Linq;
-using Pulsar.NugetManager.Models;
+﻿using Pulsar.NugetManager.Models;
 using Pulsar.NugetManager.Services.Interfaces;
+using System.Reflection;
+using System.Text.RegularExpressions;
+using System.Xml.Linq;
 
 namespace Pulsar.NugetManager.Services;
 
@@ -14,7 +15,7 @@ public class SolutionMigrationService : ISolutionMigrationService
         _logger = logger;
     }
 
-    public async Task<List<ProjectReferenceInfo>> AnalyzeSolutionAsync(string solutionFile)
+    public async Task<List<ProjectReferenceInfo>> AnalyzeSolutionAsync(string solutionFile, string dllFolder)
     {
 
         _logger.Info($"Analyzing solution file: {solutionFile}");
@@ -86,6 +87,17 @@ public class SolutionMigrationService : ISolutionMigrationService
                     continue;
                 }
 
+                var referenceName =
+                    (reference.Attribute("Include")?.Value
+                        ?? string.Empty)
+                        .Split(',')[0]
+                        .Trim();
+
+                var dllVersion =
+                    GetDllVersion(
+                        dllFolder,
+                        referenceName);
+
                 results.Add(new ProjectReferenceInfo
                 {
                     SolutionName =
@@ -98,8 +110,10 @@ public class SolutionMigrationService : ISolutionMigrationService
                         projectFile,
 
                     ReferenceName =
-                        reference.Attribute("Include")?.Value
-                        ?? string.Empty,
+                       referenceName,
+
+                    DllVersion =
+                            dllVersion,
 
                     ReferencePath =
                         hintPath.Value
@@ -166,7 +180,9 @@ public class SolutionMigrationService : ISolutionMigrationService
                             $"""
                         <PackageReference Include="{match.PackageName}"
                                           Version="{match.PackageVersion}" />
-                        """
+                        """,
+
+                    DllVersion = reference.DllVersion
                 });
         }
 
@@ -334,4 +350,32 @@ public class SolutionMigrationService : ISolutionMigrationService
                     version)));
     }
 
+    private static string GetDllVersion(
+    string dllFolder,
+    string referenceName)
+    {
+        try
+        {
+            var dllPath =
+                Path.Combine(
+                    dllFolder,
+                    $"{referenceName}.dll");
+
+            if (!File.Exists(dllPath))
+            {
+                return "N/A";
+            }
+
+            var assemblyName =
+                AssemblyName.GetAssemblyName(
+                    dllPath);
+
+            return assemblyName.Version?.ToString()
+                   ?? "N/A";
+        }
+        catch
+        {
+            return "N/A";
+        }
+    }
 }

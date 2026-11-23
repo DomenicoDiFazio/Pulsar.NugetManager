@@ -14,5 +14,5 @@ public interface IAzureDevOpsService
 
     Task<List<AzurePackageInfo>> GetAllPackagesAsync();
 
-    Task<PackageMatchInfo>FindPackageMatchAsync(string referenceName);
+    Task<PackageMatchInfo>FindPackageMatchAsync(string referenceName, string dllVersion);
 }

@@ -12,6 +12,8 @@ public class PackageMatchInfo
 
     public bool MatchFound { get; set; }
 
+    public string DllVersion { get; set; } = string.Empty;
+
     public string Status =>
         MatchFound
             ? "Match"

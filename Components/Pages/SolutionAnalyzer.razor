@@ -41,6 +41,26 @@
             <FilePicker @ref="filePicker" Filter=".sln" OnFileSelected="OnFileSelected" />
         </div>
 
+        <div class="form-group">
+
+            <label>Cartella DLL</label>
+
+            <div class="folder-row">
+                <input class="form-input"
+                       @bind="DllFolder" />
+
+                <button class="browse-button"
+                        type="button"
+                        @onclick="OpenFolderPicker">
+                    📂 Sfoglia...
+                </button>
+            </div>
+
+            <FolderPicker
+                @ref="folderPicker"
+                OnFolderSelected="OnFolderSelected" />
+
+        </div>
         <button class="analyze-button"
                 disabled="@IsLoading"
                 @onclick="AnalyzeAsync">
@@ -67,6 +87,7 @@
                         <th>Solution</th>
                         <th>Progetto</th>
                         <th>Riferimento</th>
+                        <th>Versione DLL</th>
                         <th>HintPath</th>
                     </tr>
                 </thead>
@@ -79,6 +100,7 @@
                             <td>@reference.SolutionName</td>
                             <td>@reference.ProjectName</td>
                             <td>@reference.ReferenceName</td>
+                            <td>@reference.DllVersion</td>
                             <td>@reference.ReferencePath</td>
                         </tr>
                     }
@@ -106,11 +128,24 @@
     
     private MessageDialog messageDialog = default!;
 
+    private string DllFolder = string.Empty;
+
+    private FolderPicker folderPicker = default!;
+
     private async Task AnalyzeAsync()
     {
         if (string.IsNullOrWhiteSpace(SolutionFile) || !File.Exists(SolutionFile))
         {
             messageDialog.Show("Seleziona un file solution (.sln) valido.", MessageType.Warning);
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(DllFolder) || !Directory.Exists(DllFolder))
+        {
+            messageDialog.Show(
+                "Seleziona una cartella DLL valida.",
+                MessageType.Warning);
+
             return;
         }
 
@@ -121,7 +156,7 @@
         {
             SolutionName = Path.GetFileNameWithoutExtension(SolutionFile);
 
-            References = await SolutionMigrationService.AnalyzeSolutionAsync(SolutionFile);
+            References = await SolutionMigrationService.AnalyzeSolutionAsync(SolutionFile, DllFolder);
         }
         catch (Exception ex)
         {
@@ -146,4 +181,8 @@
     private void OpenFilePicker() => filePicker.Open(SolutionFile);
 
     private void OnFileSelected(string file) => SolutionFile = file;
+
+    private void OpenFolderPicker() => folderPicker.Open(DllFolder);
+
+private void OnFolderSelected(string path) => DllFolder = path;
 }

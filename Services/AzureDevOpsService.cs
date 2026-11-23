@@ -214,56 +214,122 @@ public class AzureDevOpsService : IAzureDevOpsService
             return [];
         }
 
-        return result.Value
-             .Select(x => new AzurePackageInfo
-             {
-                 FeedName = feed.Name,
-                 PackageId = x.Name,
+        var packages = new List<AzurePackageInfo>();
 
-                 Version = x.Versions
-                     .FirstOrDefault(v => v.IsLatest)?.Version
-
-                     ?? x.Versions
-                         .FirstOrDefault()?.Version
-
-                     ?? string.Empty
-             })
-             .ToList();
+        foreach (var package in result.Value)
+        {
+            foreach (var version in package.Versions)
+            {
+                packages.Add(
+                    new AzurePackageInfo
+                    {
+                        FeedName = feed.Name,
+                        PackageId = package.Name,
+                        Version = version.Version
+                    });
             }
+        }
 
-    public async Task<PackageMatchInfo>FindPackageMatchAsync(string referenceName)
+        return packages;
+    }
+
+    public async Task<PackageMatchInfo> FindPackageMatchAsync(
+    string referenceName,
+    string dllVersion)
     {
+
+        if (string.IsNullOrWhiteSpace(dllVersion) || dllVersion == "N/A")
+        {
+            return new PackageMatchInfo
+            {
+                ReferenceName = referenceName,
+                DllVersion = dllVersion,
+                MatchFound = false
+            };
+        }
+
         var packages =
             await GetAllPackagesAsync();
+
+        var normalizedDllVersion =
+            NormalizeVersion(dllVersion);
 
         var match =
             packages.FirstOrDefault(x =>
                 string.Equals(
                     x.PackageId,
                     referenceName,
+                    StringComparison.OrdinalIgnoreCase)
+
+                &&
+
+                string.Equals(
+                    NormalizeVersion(x.Version),
+                    normalizedDllVersion,
                     StringComparison.OrdinalIgnoreCase));
 
         if (match is null)
         {
+            match =
+                packages
+                    .Where(x =>
+                        string.Equals(
+                            x.PackageId,
+                            referenceName,
+                            StringComparison.OrdinalIgnoreCase))
+                    .OrderByDescending(x => x.Version)
+                    .FirstOrDefault();
+        }
 
-            _logger.Info($"Package not found: {referenceName}");
+        if (match is null)
+        {
+            _logger.Info(
+                $"Package not found: {referenceName} ({dllVersion})");
 
             return new PackageMatchInfo
             {
                 ReferenceName = referenceName,
+                DllVersion = dllVersion,
                 MatchFound = false
             };
         }
 
-        _logger.Info($"Package match found: {referenceName} -> {match.PackageId} ({match.Version})");
+        _logger.Info(
+            $"Package match found: {referenceName} ({dllVersion}) -> {match.PackageId} ({match.Version})");
 
         return new PackageMatchInfo
         {
             ReferenceName = referenceName,
+            DllVersion = dllVersion,
             FeedName = match.FeedName,
             PackageName = match.PackageId,
             PackageVersion = match.Version,
             MatchFound = true
         };
+    }
+
+    private static string NormalizeVersion(string? version)
+    {
+        if (string.IsNullOrWhiteSpace(version))
+        {
+            return string.Empty;
+        }
+
+        if (!Version.TryParse(version, out var parsedVersion))
+        {
+            return version.Trim();
+        }
+
+        if (parsedVersion.Build > 0)
+        {
+            return
+                $"{parsedVersion.Major}." +
+                $"{parsedVersion.Minor}." +
+                $"{parsedVersion.Build}";
+        }
+
+        return
+            $"{parsedVersion.Major}." +
+            $"{parsedVersion.Minor}";
     }
 }

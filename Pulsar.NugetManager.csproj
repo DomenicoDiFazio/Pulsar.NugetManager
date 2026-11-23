@@ -5,10 +5,11 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
 
-	<Version>1.0.7</Version>
+	<Version>1.0.1</Version>
 	<FileVersion>$(Version)</FileVersion>
 	<PackageReleaseNotes>
-		20260922 Rel 1.0.0 Versione Iniziale
+		20261123 Rel 1.0.0 Versione Iniziale
+		20261123 Rel 1.0.1 Aggiunta la scelta della cartella DLL nella sezione Solution Migrator in modo tale che il match su Azure  avviene anche con la versione oltre che con il nome del package
 	</PackageReleaseNotes>
 	  
   </PropertyGroup>
