@@ -4,6 +4,13 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+
+	<Version>1.0.7</Version>
+	<FileVersion>$(Version)</FileVersion>
+	<PackageReleaseNotes>
+		20260922 Rel 1.0.0 Versione Iniziale
+	</PackageReleaseNotes>
+	  
   </PropertyGroup>
 
   <ItemGroup>
