@@ -135,3 +135,10 @@
 .nav-item:hover .nav-icon {
     opacity: 1;
 }
+
+.app-version {
+    margin-left: 12px;
+    padding-left: 12px;
+    border-left: 1px solid rgba(255, 255, 255, 0.25);
+    opacity: 0.8;
+}

@@ -1,4 +1,6 @@
 ﻿@inherits LayoutComponentBase
+@using System.Reflection
+
 <div class="layout-container">
 
     <aside class="sidebar">
@@ -96,6 +98,7 @@
 
     <footer class="bottom-bar">
         © @DateTime.Now.Year Pulsar NuGet Manager — Developed by Domenico Di Fazio
+        <span class="app-version">v@(AppVersion)</span>
     </footer>
 
 </div>
@@ -112,6 +115,8 @@
 
     private bool SolutionMigratorExpanded = true;
 
+    private static readonly string AppVersion = GetAppVersion();
+
     private void ToggleAzureDevOps()
     {
         AzureDevOpsExpanded = !AzureDevOpsExpanded;
@@ -122,4 +127,19 @@
         SolutionMigratorExpanded = !SolutionMigratorExpanded;
     }
 
+    private static string GetAppVersion()
+    {
+        var assembly = typeof(MainLayout).Assembly;
+
+        var version = assembly
+            .GetCustomAttribute<System.Reflection.AssemblyInformationalVersionAttribute>()
+            ?.InformationalVersion;
+
+        if (string.IsNullOrWhiteSpace(version))
+            return assembly.GetName().Version?.ToString(3) ?? "?";
+
+        // Il SDK .NET 8+ aggiunge l'hash del commit (es. 1.0.1+a1b2c3): lo tolgo
+        var plus = version.IndexOf('+');
+        return plus >= 0 ? version[..plus] : version;
+    }
 }
