@@ -16,16 +16,16 @@
     border-collapse: collapse;
 }
 
-    .result-table th,
-    .result-table td {
-        padding: 12px;
-        text-align: left;
-        border-bottom: 1px solid #e5e7eb;
-    }
+.result-table th,
+.result-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
 
-    .result-table th {
-        background-color: #f8fafc;
-    }
+.result-table th {
+    background-color: #f8fafc;
+}
 
 .match-button {
     background: #2563eb;
@@ -50,11 +50,11 @@
     margin-bottom: 15px;
 }
 
-    .form-group label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: 600;
-    }
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
 
 .form-input {
     width: 100%;

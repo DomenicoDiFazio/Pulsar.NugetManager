@@ -24,16 +24,16 @@
     border-collapse: collapse;
 }
 
-    .feeds-table th,
-    .feeds-table td {
-        padding: 12px;
-        border-bottom: 1px solid #e5e7eb;
-        text-align: left;
-    }
+.feeds-table th,
+.feeds-table td {
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+    text-align: left;
+}
 
-    .feeds-table th {
-        background-color: #f8fafc;
-        font-weight: 600;
-    }
+.feeds-table th {
+    background-color: #f8fafc;
+    font-weight: 600;
+}
 
 

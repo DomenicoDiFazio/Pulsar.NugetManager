@@ -2,10 +2,6 @@
     width: 100%;
 }
 
-.page-header {
-    margin-bottom: 25px;
-}
-
 .result-card {
     background: white;
     padding: 20px;
@@ -26,11 +22,11 @@
     margin-bottom: 15px;
 }
 
-    .form-group label {
-        display: block;
-        margin-bottom: 8px;
-        font-weight: 600;
-    }
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
 
 .form-input {
     width: 100%;
@@ -53,26 +49,26 @@
     border-collapse: collapse;
 }
 
-    .result-table th,
-    .result-table td {
-        text-align: left;
-        padding: 12px;
-        border-bottom: 1px solid #e5e7eb;
-    }
+.result-table th,
+.result-table td {
+    text-align: left;
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+}
 
-    .result-table th {
-        background: #f8fafc;
-    }
+.result-table th {
+    background: #f8fafc;
+}
 
 .folder-row {
     display: flex;
     gap: 10px;
 }
 
-    .folder-row .form-input {
-        flex: 1;
-        min-width: 0;
-    }
+.folder-row .form-input {
+    flex: 1;
+    min-width: 0;
+}
 
 .browse-button {
     padding: 0 18px;
@@ -83,6 +79,6 @@
     white-space: nowrap;
 }
 
-    .browse-button:hover {
-        background: #f1f5f9;
-    }
+.browse-button:hover {
+    background: #f1f5f9;
+}
