@@ -60,7 +60,7 @@
     min-width: 0;
     padding: 30px;
     overflow-y: auto;
-    background: linear-gradient( rgba(244,246,249,0.45), rgba(244,246,249,0.45) ), url('/images/app-background.png') no-repeat left center / 100%, #f4f6f9;
+    background: linear-gradient( rgba(244,246,249,0.75), rgba(244,246,249,0.75) ), url('/images/app-background.png') no-repeat center center / 100%, #f4f6f9;
 }
 
 .content-home {
