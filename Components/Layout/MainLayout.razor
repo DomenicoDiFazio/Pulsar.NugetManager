@@ -1,4 +1,5 @@
-﻿@inherits LayoutComponentBase
+﻿@inject NavigationManager Navigation
+@inherits LayoutComponentBase
 @using System.Reflection
 
 <div class="layout-container">
@@ -92,9 +93,10 @@
 
     </aside>
 
-    <main class="content">
+    <div class="content @(IsHomePage ? "content-home" : "content")">
         @Body
-    </main>
+    </div>
+
 
     <footer class="bottom-bar">
         © @DateTime.Now.Year Pulsar NuGet Manager — Developed by Domenico Di Fazio
@@ -142,4 +144,8 @@
         var plus = version.IndexOf('+');
         return plus >= 0 ? version[..plus] : version;
     }
+
+    @inject NavigationManager Navigation
+
+    private bool IsHomePage => string.IsNullOrWhiteSpace(Navigation.ToBaseRelativePath(Navigation.Uri));
 }
