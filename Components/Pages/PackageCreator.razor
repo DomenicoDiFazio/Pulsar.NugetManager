@@ -19,7 +19,7 @@
         </div>
 
         <div class="page-header-text">
-            <h1>Package Creator</h1>
+            <h1>NuGet Package Creator</h1>
             <p>
                 Seleziona una cartella contenente DLL e prepara
                 i pacchetti NuGet da generare.
@@ -114,6 +114,15 @@
             </div>
         </div>
 
+        <div class="form-group">
+
+            <label>Prefisso Package per DLL versione 0.0.0.0 e 1.0.0.0</label>
+
+            <input class="form-input prefix-input"
+                   @bind="PackagePrefix" />
+
+        </div>
+
         <button class="generate-button"
                 disabled="@IsGenerating"
                 @onclick="GeneratePackagesAsync">
@@ -188,6 +197,8 @@
 
     private MessageDialog messageDialog = default!;
 
+    private string PackagePrefix = string.Empty;
+
     private async Task LoadDllsAsync()
     {
         if (string.IsNullOrWhiteSpace(DllFolder) || !Directory.Exists(DllFolder))
@@ -209,6 +220,11 @@
             foreach (var dll in Dlls)
             {
                 dll.Selected = true;
+
+                if (dll.RequiresPrefix)
+                {
+                    dll.PackagePrefix = PackagePrefix;
+                }
             }
 
             SelectAll = true;
@@ -270,7 +286,7 @@
 
         try
         {
-            Results = await NugetPackageService.CreatePackagesAsync(Dlls, OutputFolder);
+            Results = await NugetPackageService.CreatePackagesAsync(Dlls, OutputFolder, PackagePrefix);
         }
         catch (Exception ex)
         {

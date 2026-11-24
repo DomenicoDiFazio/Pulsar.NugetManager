@@ -10,7 +10,7 @@ public class NugetPackageService : INugetPackageService
 {
     public async Task<List<PackageCreationResult>> CreatePackagesAsync(
         IEnumerable<DllInfo> dlls,
-        string outputFolder)
+        string outputFolder, string packagePrefix)
     {
         var results = new List<PackageCreationResult>();
 
@@ -26,6 +26,13 @@ public class NugetPackageService : INugetPackageService
             try
             {
                 var packageId = Path.GetFileNameWithoutExtension(dll.Name);
+
+                if (dll.Version == "0.0.0.0" ||
+                    dll.Version == "1.0.0.0")
+                {
+                    packageId =
+                        $"{packagePrefix}{packageId}";
+                }
 
                 var packageVersion = dll.Version;
 

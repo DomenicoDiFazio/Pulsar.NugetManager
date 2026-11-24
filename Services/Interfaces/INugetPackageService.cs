@@ -6,5 +6,5 @@ public interface INugetPackageService
 {
     Task<List<PackageCreationResult>> CreatePackagesAsync(
         IEnumerable<DllInfo> dlls,
-        string outputFolder);
+        string outputFolder, string packagePrefix);
 }

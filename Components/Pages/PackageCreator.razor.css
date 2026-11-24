@@ -27,6 +27,10 @@
     border-radius: 6px;
 }
 
+.prefix-input {
+    width: 500px;
+}
+
 .action-button {
     background: #2563eb;
     color: white;
