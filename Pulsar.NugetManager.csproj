@@ -5,12 +5,13 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
 
-	<Version>1.0.2</Version>
+	<Version>1.0.3</Version>
 	<FileVersion>$(Version)</FileVersion>
 	<PackageReleaseNotes>
 		20261123 Rel 1.0.0 Versione Iniziale
 		20261123 Rel 1.0.1 Aggiunta la scelta della cartella DLL nella sezione Solution Migrator in modo tale che il match su Azure  avviene anche con la versione oltre che con il nome del package
 		20261124 Rel 1.0.2 Aggiunta la scelta di un prefisso nella sezione Nuget Package Creator per DLL versioni 0.0.0.0 e 1.0.0.0
+		20261124 Rel 1.0.3 Aggiunta la cifratura del PAT nel file azuredevops-settings.json
 	</PackageReleaseNotes>
 	  
   </PropertyGroup>
@@ -19,6 +20,7 @@
     <PackageReference Include="NLog" Version="6.2.2" />
     <PackageReference Include="NLog.Web.AspNetCore" Version="6.3.0" />
     <PackageReference Include="NuGet.Packaging" Version="8.0.0" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="11.0.0" />
   </ItemGroup>
 
 </Project>

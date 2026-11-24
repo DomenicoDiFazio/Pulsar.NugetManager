@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Security.Cryptography;
 
 namespace Pulsar.NugetManager.Services;
 
@@ -31,21 +32,38 @@ public class AzureDevOpsService : IAzureDevOpsService
             return new AzureDevOpsSettings();
         }
 
-        var json = await File.ReadAllTextAsync(_settingsFile);
+        var json =
+            await File.ReadAllTextAsync(_settingsFile);
 
-        return JsonSerializer.Deserialize<AzureDevOpsSettings>(json)
-               ?? new AzureDevOpsSettings();
+        var settings =
+            JsonSerializer.Deserialize<AzureDevOpsSettings>(json)
+            ?? new AzureDevOpsSettings();
+
+        settings.PersonalAccessToken =
+            TryDecrypt(settings.PersonalAccessToken);
+
+        return settings;
     }
 
     public async Task SaveSettingsAsync(
-        AzureDevOpsSettings settings)
+    AzureDevOpsSettings settings)
     {
-        var json = JsonSerializer.Serialize(
-            settings,
-            new JsonSerializerOptions
+        var settingsToSave =
+            new AzureDevOpsSettings
             {
-                WriteIndented = true
-            });
+                Organization = settings.Organization,
+                PersonalAccessToken =
+                    Encrypt(settings.PersonalAccessToken),
+                DefaultFeed = settings.DefaultFeed
+            };
+
+        var json =
+            JsonSerializer.Serialize(
+                settingsToSave,
+                new JsonSerializerOptions
+                {
+                    WriteIndented = true
+                });
 
         await File.WriteAllTextAsync(
             _settingsFile,
@@ -331,5 +349,60 @@ public class AzureDevOpsService : IAzureDevOpsService
         return
             $"{parsedVersion.Major}." +
             $"{parsedVersion.Minor}";
+    }
+
+    private static string Encrypt(string plainText)
+    {
+        if (string.IsNullOrWhiteSpace(plainText))
+        {
+            return string.Empty;
+        }
+
+        var bytes =
+            Encoding.UTF8.GetBytes(plainText);
+
+        var encryptedBytes =
+            ProtectedData.Protect(
+                bytes,
+                null,
+                DataProtectionScope.CurrentUser);
+
+        return Convert.ToBase64String(encryptedBytes);
+    }
+
+    private static string Decrypt(string encryptedText)
+    {
+        if (string.IsNullOrWhiteSpace(encryptedText))
+        {
+            return string.Empty;
+        }
+
+        var encryptedBytes =
+            Convert.FromBase64String(encryptedText);
+
+        var decryptedBytes =
+            ProtectedData.Unprotect(
+                encryptedBytes,
+                null,
+                DataProtectionScope.CurrentUser);
+
+        return Encoding.UTF8.GetString(decryptedBytes);
+    }
+
+    private static string TryDecrypt(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return string.Empty;
+        }
+
+        try
+        {
+            return Decrypt(value);
+        }
+        catch
+        {
+            return value;
+        }
     }
 }
