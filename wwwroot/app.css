@@ -1,3 +1,8 @@
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
 h1:focus {
     outline: none;
 }
@@ -20,9 +25,9 @@ h1:focus {
     color: white;
 }
 
-    .blazor-error-boundary::after {
-        content: "An error has occurred."
-    }
+.blazor-error-boundary::after {
+    content: "An error has occurred."
+}
 
 .darker-border-checkbox.form-check-input {
     border-color: #929292;
@@ -73,10 +78,10 @@ h1:focus {
     box-shadow: 0 2px 6px rgba(13, 110, 253, 0.15);
 }
 
-    .page-icon img {
-        height: 30px;
-        width: auto;
-    }
+.page-icon img {
+    height: 30px;
+    width: auto;
+}
 
 .page-header h1 {
     margin: 0 0 6px 0;

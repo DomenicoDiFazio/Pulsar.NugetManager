@@ -1,11 +1,11 @@
 .layout-container {
     display: grid;
     grid-template-columns: 260px 1fr;
-    grid-template-rows: 1fr auto;
+    grid-template-rows: minmax(0, 1fr) auto; /* permette alla riga di restringersi */
     grid-template-areas:
         "sidebar content"
         "sidebar footer";
-    min-height: 100vh;
+    height: 100vh; /* al posto di min-height */
     background-color: #f4f6f9;
 }
 
@@ -16,6 +16,7 @@
     display: flex;
     flex-direction: column;
     box-shadow: 4px 0 12px rgba(0, 0, 0, 0.15);
+    overflow-y: auto;
 }
 
 .application-title {
