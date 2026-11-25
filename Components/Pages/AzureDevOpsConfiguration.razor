@@ -55,7 +55,7 @@
 
         <div class="form-group">
 
-            <label>Default Feed</label>
+            <label>Default Feed (opzionale)</label>
 
             <input class="form-input"
                    @bind="Settings.DefaultFeed" />
@@ -105,6 +105,11 @@
 
     private async Task SaveAsync()
     {
+        if (!ValidateSettings())
+        {
+            return;
+        }
+
         try
         {
             await AzureDevOpsService.SaveSettingsAsync(Settings);
@@ -117,6 +122,7 @@
         }
     }
 
+
     private void TogglePatVisibility()
     {
         ShowPatToken = !ShowPatToken;
@@ -124,15 +130,19 @@
 
     private async Task TestConnectionAsync()
     {
+        if (!ValidateSettings())
+        {
+            return;
+        }
+
         IsTesting = true;
 
         try
         {
             await AzureDevOpsService.SaveSettingsAsync(Settings);
 
-            var feeds = await AzureDevOpsService.GetFeedsAsync();
-
-            IsTesting = false;
+            var feeds =
+                await AzureDevOpsService.GetFeedsAsync();
 
             messageDialog.Show(
                 $"Connessione riuscita. Feed trovati: {feeds.Count}",
@@ -141,13 +151,37 @@
         }
         catch (Exception ex)
         {
-            IsTesting = false;
-
-            messageDialog.Show(ex.Message, MessageType.Error, "Test connessione fallito");
+            messageDialog.Show(
+                ex.Message,
+                MessageType.Error,
+                "Test connessione fallito");
         }
         finally
         {
             IsTesting = false;
         }
+    }
+
+    private bool ValidateSettings()
+    {
+        if (string.IsNullOrWhiteSpace(Settings.Organization))
+        {
+            messageDialog.Show(
+                "Inserire il nome dell'Organization Azure DevOps.",
+                MessageType.Warning);
+
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(Settings.PersonalAccessToken))
+        {
+            messageDialog.Show(
+                "Inserire il Personal Access Token (PAT).",
+                MessageType.Warning);
+
+            return false;
+        }
+
+        return true;
     }
 }
