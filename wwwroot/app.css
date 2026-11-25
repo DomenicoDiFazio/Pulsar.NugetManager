@@ -66,6 +66,16 @@ h1:focus {
     margin-bottom: 25px;
 }
 
+.page-header-card {
+    background: linear-gradient( 135deg, rgba(255,255,255,0.95), rgba(248,250,252,0.95) );
+    border-radius: 14px;
+    padding: 22px 24px;
+    margin-bottom: 20px;
+    border-left: 5px solid #2563eb;
+    box-shadow: 0 4px 12px rgba(0,0,0,.08);
+    backdrop-filter: blur(2px);
+}
+
 .page-icon {
     flex-shrink: 0;
     width: 56px;
