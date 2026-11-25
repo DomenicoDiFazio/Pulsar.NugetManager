@@ -53,8 +53,7 @@ public class AzureDevOpsService : IAzureDevOpsService
             {
                 Organization = settings.Organization,
                 PersonalAccessToken =
-                    Encrypt(settings.PersonalAccessToken),
-                DefaultFeed = settings.DefaultFeed
+                    Encrypt(settings.PersonalAccessToken)
             };
 
         var json =
