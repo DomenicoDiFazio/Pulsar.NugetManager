@@ -194,6 +194,11 @@
             </table>
         </div>
     }
+    @if (IsLoadingFeeds)
+    {
+        <LoadingSpinner Overlay="true" Text="Caricamento feed in corso..." />
+    }
+
     <MessageDialog @ref="messageDialog" />
 </div>
 
@@ -211,6 +216,8 @@
 
     private bool IsLoading = false;
 
+    private bool IsLoadingFeeds = true;
+
     private bool IsPublishing = false;
 
     private bool SelectAll = true;
@@ -219,12 +226,22 @@
 
     private MessageDialog messageDialog = default!;
 
-    private bool feedsMessagePending;
-    private string? feedsMessage;
-    private MessageType feedsMessageType;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (firstRender)
+        {
+            await LoadFeedsAsync();
+        }
+    }
+
+    private async Task LoadFeedsAsync()
+    {
+        IsLoadingFeeds = true;
+        StateHasChanged();   // mostra subito lo spinner
+
+        string? errorMessage = null;
+
         try
         {
             Feeds = await AzureDevOpsService.GetFeedsAsync();
@@ -233,18 +250,28 @@
             {
                 SelectedFeed = Feeds.First().Name;
             }
-            else
-            {
-                feedsMessagePending = true;
-                feedsMessage = "Nessun Feed Azure Artifacts disponibile.";
-                feedsMessageType = MessageType.Warning;
-            }
         }
         catch (Exception ex)
         {
-            feedsMessagePending = true;
-            feedsMessage = ex.Message;
-            feedsMessageType = MessageType.Error;
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            IsLoadingFeeds = false;
+        }
+
+        StateHasChanged();   // nasconde lo spinner e popola la combo
+
+        if (errorMessage is not null)
+        {
+            messageDialog.Show(errorMessage, MessageType.Error, "Feed Azure Artifacts");
+        }
+        else if (!Feeds.Any())
+        {
+            messageDialog.Show(
+                "Nessun Feed Azure Artifacts disponibile.",
+                MessageType.Warning,
+                "Feed Azure Artifacts");
         }
     }
 
@@ -383,16 +410,5 @@
     private void OpenPicker() => picker.Open(PackagesFolder);
 
     private void OnFolderSelected(string path) => PackagesFolder = path;
-
-    protected override void OnAfterRender(bool firstRender)
-    {
-        // Il dialog non esiste ancora durante OnInitializedAsync:
-        // il messaggio viene mostrato dopo il primo rendering.
-        if (feedsMessagePending && messageDialog is not null)
-        {
-            feedsMessagePending = false;
-            messageDialog.Show(feedsMessage!, feedsMessageType, "Feed Azure Artifacts");
-        }
-    }
 
 }

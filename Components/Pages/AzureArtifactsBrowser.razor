@@ -31,7 +31,7 @@
     </div>
     @if (IsLoading)
     {
-        <LoadingSpinner Overlay="true" />
+        <LoadingSpinner Overlay="true" Text="Caricamento feed in corso..."/>
     }
    
     <div class="result-card">
@@ -94,37 +94,49 @@
 
     private List<AzureFeedInfo> Feeds = [];
 
-    private bool IsLoading = false;
+    private bool IsLoading = true;
 
     private MessageDialog messageDialog = default!;
 
-    private async Task LoadFeedsAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        IsLoading = true;
-        Feeds.Clear();
-
-        try
+        if (firstRender)
         {
-            Feeds = await AzureDevOpsService.GetFeedsAsync();
-        }
-        catch (Exception ex)
-        {
-            IsLoading = false;
-
-            messageDialog.Show(ex.Message, MessageType.Error, "Errore nel caricamento dei feed");
-            return;
-        }
-        finally
-        {
-            IsLoading = false;
-        }
-
-        if (!Feeds.Any())
-        {
-            messageDialog.Show(
-                "Nessun feed Azure Artifacts trovato.",
-                MessageType.Warning);
+            await LoadFeedsAsync();
         }
     }
+
+   private async Task LoadFeedsAsync()
+{
+    IsLoading = true;
+    Feeds.Clear();
+    StateHasChanged();   // mostra lo spinner subito
+
+    try
+    {
+        Feeds = await AzureDevOpsService.GetFeedsAsync();
+    }
+    catch (Exception ex)
+    {
+        IsLoading = false;
+        StateHasChanged();
+
+        messageDialog.Show(ex.Message, MessageType.Error, "Errore nel caricamento dei feed");
+        return;
+    }
+    finally
+    {
+        IsLoading = false;
+    }
+
+    StateHasChanged();   // aggiorna la tabella
+
+    if (!Feeds.Any())
+    {
+        messageDialog.Show(
+            "Nessun feed Azure Artifacts trovato.",
+            MessageType.Warning);
+    }
+}
 
 }
