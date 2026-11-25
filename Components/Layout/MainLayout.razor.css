@@ -68,8 +68,10 @@
     min-width: 0;
     padding: 30px;
     overflow-y: auto;
-    background: #f4f6f9;
+    background: linear-gradient( rgba(255,255,255,0.82), rgba(255,255,255,0.82) ), url('/images/home-background.png') no-repeat center center / cover;
+    background-attachment: fixed;
 }
+
 
 #blazor-error-ui {
     display: none;
