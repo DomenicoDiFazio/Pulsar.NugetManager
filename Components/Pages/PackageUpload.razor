@@ -29,36 +29,29 @@
     <div class="upload-card">
 
         <div class="form-group">
+
             <label>Cartella Pacchetti</label>
 
             <div class="folder-row">
-                <input class="form-input" @bind="PackagesFolder" />
-                <button class="browse-button" type="button" @onclick="OpenPicker">
+                <input class="form-input"
+                       @bind="PackagesFolder" />
+
+                <button class="browse-button"
+                        type="button"
+                        @onclick="OpenPicker">
                     📂 Sfoglia...
                 </button>
             </div>
-            <FolderPicker @ref="picker" OnFolderSelected="OnFolderSelected" />
+
+            <FolderPicker @ref="picker"
+                          OnFolderSelected="OnFolderSelected" />
+
         </div>
 
-        <button class="load-button"
-                disabled="@IsLoading"
-                @onclick="LoadPackagesAsync">
-
-            @(IsLoading
-                        ? "Caricamento..."
-                        : "Carica Pacchetti")
-
-        </button>
-        @if (IsLoading)
+        @if (Feeds.Any())
         {
-            <LoadingSpinner Overlay="true" />
-        }
-    </div>
-
-    @if (Feeds.Any())
-    {
-        <div class="feed-card">
             <div class="form-group">
+
                 <label>Feed Azure Artifacts</label>
 
                 <select class="feed-select"
@@ -72,10 +65,27 @@
                     }
 
                 </select>
+
             </div>
-        </div>
-    }
-   
+        }
+
+        <button class="load-button"
+                disabled="@IsLoading"
+                @onclick="LoadPackagesAsync">
+
+            @(IsLoading
+                        ? "Caricamento..."
+                        : "Carica Pacchetti")
+
+        </button>
+
+        @if (IsLoading)
+        {
+            <LoadingSpinner Overlay="true" />
+        }
+
+    </div>
+
     @if (Packages.Any())
     {
         <div class="result-card">
