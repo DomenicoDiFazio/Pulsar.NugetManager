@@ -26,36 +26,27 @@
 
     </div>
 
-    <button class="load-button"
-            disabled="@IsLoading"
-            @onclick="LoadFeedsAsync">
-
-        @(IsLoading
-                ? "Caricamento..."
-                : "Carica Feed")
-
-    </button>
     @if (IsLoading)
     {
         <LoadingSpinner Overlay="true" />
     }
    
-    @if (Feeds.Any())
-    {
-        <div class="result-card">
+    <div class="result-card">
 
-            <table class="feeds-table">
+        <table class="feeds-table">
 
-                <thead>
-                    <tr>
-                        <th>Nome</th>
-                        <th>Id</th>
-                        <th>Descrizione</th>
-                    </tr>
-                </thead>
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Id</th>
+                    <th>Descrizione</th>
+                </tr>
+            </thead>
 
-                <tbody>
+            <tbody>
 
+                @if (Feeds.Any())
+                {
                     @foreach (var feed in Feeds)
                     {
                         <tr>
@@ -64,13 +55,35 @@
                             <td>@feed.Description</td>
                         </tr>
                     }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="3" class="empty-row">
+                            Nessun feed caricato
+                        </td>
+                    </tr>
+                }
 
-                </tbody>
+            </tbody>
 
-            </table>
+        </table>
+
+        <div class="table-actions">
+
+            <button class="load-button"
+                    disabled="@IsLoading"
+                    @onclick="LoadFeedsAsync">
+
+                @(IsLoading
+                                ? "Caricamento..."
+                                : "Carica Feed")
+
+            </button>
 
         </div>
-    }
+
+    </div>
     <MessageDialog @ref="messageDialog" />
 </div>
 
