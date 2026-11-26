@@ -287,19 +287,6 @@ public class AzureDevOpsService : IAzureDevOpsService
 
         if (match is null)
         {
-            match =
-                packages
-                    .Where(x =>
-                        string.Equals(
-                            x.PackageId,
-                            referenceName,
-                            StringComparison.OrdinalIgnoreCase))
-                    .OrderByDescending(x => x.Version)
-                    .FirstOrDefault();
-        }
-
-        if (match is null)
-        {
             _logger.Info(
                 $"Package not found: {referenceName} ({dllVersion})");
 
