@@ -3,4 +3,6 @@ obj/
 .vs/
 /azuredevops-settings.json
 /azuredevops-settings.publish.json
+/Properties/PublishProfiles/FolderProfile.pubxml.us
+/Properties/PublishProfiles/FolderProfile.pubxml
 /Properties/PublishProfiles/FolderProfile.pubxml.user
