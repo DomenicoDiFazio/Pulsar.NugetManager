@@ -77,10 +77,6 @@
     border-bottom: 1px solid #eef2f7;
 }
 
-.dll-table tr:hover {
-    background-color: #f8fafc;
-}
-
 .dll-size {
     text-align: right;
     font-weight: 600;

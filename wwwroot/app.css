@@ -118,14 +118,12 @@ h1:focus {
     font-weight: 600;
 }
 
-.data-table tr:hover {
-    background: #f8fafc;
-}
-
 .data-table tbody tr:nth-child(even) {
     background-color: #f8fbff;
 }
 
 .data-table tbody tr:hover {
-    background-color: #eef6ff;
+    background-color: #fff7b2;
+    transition: background-color 0.15s ease;
 }
+
