@@ -127,3 +127,11 @@ h1:focus {
     transition: background-color 0.15s ease;
 }
 
+body {
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
+}
+
+/* pulsanti, campi e select non ereditano il font in automatico */
+button, input, select, textarea {
+    font-family: inherit;
+}

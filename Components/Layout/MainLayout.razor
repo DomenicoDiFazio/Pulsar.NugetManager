@@ -13,20 +13,20 @@
 
         <nav class="navigation-menu">
 
-            <a href="/" class="nav-item">
+            <NavLink href="/" Match="NavLinkMatch.All" class="nav-item">
                 <img class="nav-icon" src="images/icon-home.svg" alt="" />
                 <span>Home</span>
-            </a>
+            </NavLink>
 
-            <a href="/scan" class="nav-item">
+            <NavLink href="/scan" class="nav-item">
                 <img class="nav-icon" src="images/icon-analizza.png" alt="" />
                 <span>DLL Scanner</span>
-            </a>
+            </NavLink>
 
-            <a href="/package-create" class="nav-item">
+            <NavLink href="/package-create" class="nav-item">
                 <img class="nav-icon" src="images/icon-crea.png" alt="" />
                 <span>NuGet Package Creator</span>
-            </a>
+            </NavLink>
 
             <button class="menu-group"
                     @onclick="ToggleAzureDevOps">
@@ -38,20 +38,20 @@
             {
                 <div class="submenu">
 
-                    <a href="/azure-devops" class="submenu-item">
+                    <NavLink href="/azure-devops" class="submenu-item">
                         <img class="submenu-icon" src="images/icon-pubblica.png" alt="" />
                         <span>Azure DevOps Configuration</span>
-                    </a>
+                    </NavLink>
 
-                    <a href="/azure-artifacts" class="submenu-item">
+                    <NavLink href="/azure-artifacts" class="submenu-item">
                         <img class="submenu-icon" src="images/icon-pubblica.png" alt="" />
                         <span>Azure Artifacts Browser</span>
-                    </a>
+                    </NavLink>
 
-                    <a href="/package-upload" class="submenu-item">
+                    <NavLink href="/package-upload" class="submenu-item">
                         <img class="submenu-icon" src="images/icon-pubblica.png" alt="" />
                         <span>Package Upload</span>
-                    </a>
+                    </NavLink>
 
                 </div>
             }
@@ -66,25 +66,25 @@
             {
                 <div class="submenu">
 
-                    <a href="/solution-analyzer" class="submenu-item">
+                    <NavLink href="/solution-analyzer" class="submenu-item">
                         <img class="submenu-icon" src="images/icon-migra.png" alt="" />
                         <span>Solution Analyzer</span>
-                    </a>
+                    </NavLink>
 
-                    <a href="/package-matching" class="submenu-item">
+                    <NavLink href="/package-matching" class="submenu-item">
                         <img class="submenu-icon" src="images/icon-migra.png" alt="" />
                         <span>Package Matching</span>
-                    </a>
+                    </NavLink>
 
-                    <a href="/migration-preview" class="submenu-item">
+                    <NavLink href="/migration-preview" class="submenu-item">
                         <img class="submenu-icon" src="images/icon-migra.png" alt="" />
                         <span>Migration Preview</span>
-                    </a>
+                    </NavLink>
 
-                    <a href="/migration-engine" class="submenu-item">
+                    <NavLink href="/migration-engine" class="submenu-item">
                         <img class="submenu-icon" src="images/icon-migra.png" alt="" />
                         <span>Migration Engine</span>
-                    </a>
+                    </NavLink>
 
                 </div>
             }
