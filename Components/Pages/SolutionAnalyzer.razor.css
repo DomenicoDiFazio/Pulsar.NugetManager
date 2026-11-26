@@ -82,3 +82,7 @@
 .browse-button:hover {
     background: #f1f5f9;
 }
+
+.table-container {
+    overflow-x: auto;
+}

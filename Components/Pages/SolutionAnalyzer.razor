@@ -83,8 +83,8 @@
     @if (References.Any())
     {
         <div class="result-card">
-
-            <table class="result-table data-table">
+            <div class="table-container">
+                <table class="result-table data-table">
 
                 <thead>
                     <tr>
@@ -112,7 +112,7 @@
                 </tbody>
 
             </table>
-
+            </div>
         </div>
     }
     <MessageDialog @ref="messageDialog" />
