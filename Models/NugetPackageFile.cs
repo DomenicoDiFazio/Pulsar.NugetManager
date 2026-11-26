@@ -6,5 +6,7 @@ public class NugetPackageFile
 
     public string FullPath { get; set; } = string.Empty;
 
+    public string Version { get; set; } = string.Empty;
+
     public bool Selected { get; set; } = true;
 }

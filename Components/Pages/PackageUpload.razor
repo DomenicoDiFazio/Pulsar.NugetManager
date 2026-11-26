@@ -107,6 +107,7 @@
                                    @onchange="ToggleSelectAll" />
                         </th>
                         <th>Pacchetto</th>
+                        <th>Versione</th>
                     </tr>
                 </thead>
 
@@ -124,6 +125,10 @@
 
                             <td>
                                 @package.FileName
+                            </td>
+
+                            <td>
+                                @package.Version
                             </td>
 
                         </tr>
@@ -165,6 +170,8 @@
                 <thead>
                     <tr>
                         <th>Pacchetto</th>
+                        <th>Versione</th>
+                        <th>Feed</th>
                         <th>Esito</th>
                         <th>Messaggio</th>
                     </tr>
@@ -177,17 +184,19 @@
                         <tr>
                             <td>@result.PackageName</td>
 
+                            <td>@result.PackageVersion</td>
+
+                            <td>@result.FeedName</td>
+
                             <td>
                                 @(result.Success ? "OK" : "KO")
                             </td>
 
                             <td>
-                                @(result.Success
-                                                        ? "Caricato correttamente"
-                                                        : result.ErrorMessage)
-                    </td>
-                </tr>
-                                }
+                               @(result.Success? "Caricato correttamente": result.ErrorMessage)
+                            </td>
+                        </tr>
+                    }
 
                 </tbody>
 
@@ -297,6 +306,8 @@
                 {
                     FileName = Path.GetFileName(x),
                     FullPath = x,
+                    Version = ExtractPackageVersion(
+                        Path.GetFileName(x)),
                     Selected = true
                 })
                 .ToList();
@@ -353,6 +364,8 @@
                     Results.Add(new PackageCreationResult
                     {
                         PackageName = package.FileName,
+                        PackageVersion = ExtractPackageVersion(package.FileName),
+                        FeedName = SelectedFeed,
                         Success = true
                     });
                 }
@@ -361,6 +374,8 @@
                     Results.Add(new PackageCreationResult
                     {
                         PackageName = package.FileName,
+                        PackageVersion = ExtractPackageVersion(package.FileName),
+                        FeedName = SelectedFeed,
                         Success = false,
                         ErrorMessage = ex.Message
                     });
@@ -410,5 +425,20 @@
     private void OpenPicker() => picker.Open(PackagesFolder);
 
     private void OnFolderSelected(string path) => PackagesFolder = path;
+
+    private string ExtractPackageVersion(string fileName)
+    {
+        var name =
+            Path.GetFileNameWithoutExtension(fileName);
+
+        var match =
+            System.Text.RegularExpressions.Regex.Match(
+                name,
+                @"(\d+\.\d+\.\d+\.\d+)$");
+
+        return match.Success
+            ? match.Value
+            : string.Empty;
+    }
 
 }

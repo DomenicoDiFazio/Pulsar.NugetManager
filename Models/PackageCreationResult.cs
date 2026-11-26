@@ -4,6 +4,10 @@ public class PackageCreationResult
 {
     public string PackageName { get; set; } = string.Empty;
 
+    public string PackageVersion { get; set; } = string.Empty;
+
+    public string FeedName { get; set; } = string.Empty;
+
     public string PackagePath { get; set; } = string.Empty;
 
     public bool Success { get; set; }
