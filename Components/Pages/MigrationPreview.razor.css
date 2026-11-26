@@ -96,3 +96,7 @@
         flex-direction: column;
     }
 }
+
+.table-container {
+    overflow-x: auto;
+}
