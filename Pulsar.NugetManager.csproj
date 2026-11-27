@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
 
-	<Version>1.0.8</Version>
+	<Version>1.0.9</Version>
 	<FileVersion>$(Version)</FileVersion>
 	<PackageReleaseNotes>
 		20261123 Rel 1.0.0 Versione Iniziale
@@ -17,6 +17,7 @@
 		20261126 Rel 1.0.6 Aggiunte alcune informazioni sulle tabelle dei risultati della sezione Package Upload
 		20261126 Rel 1.0.7 Risoluzione Bug: nella sezione Package Matching il match deve avvenire solo se Versione DLL == Versione Package e Nome DLL == Nome Package
 		20261127 Rel 1.0.8 Aggiunti miglioramenti grafici nel menù laterale sinistro e cambiato il font dei testi.
+		20261127 Rel 1.0.9 Aggiunte singole icone per i sottomenù del menù laterale sinistro e aggiornata le card Azure DevOps e Solution Migrator con l'indicazione della sezione che si apre cliccando
 	</PackageReleaseNotes>
 	  
   </PropertyGroup>

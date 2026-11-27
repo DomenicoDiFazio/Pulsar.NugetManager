@@ -12,6 +12,7 @@
 
 .feature-card {
     display: block;
+    position: relative;
     background-color: white;
     border: 1px solid #dddddd;
     border-radius: 10px;
@@ -64,4 +65,24 @@
 
 .feature-card:hover .feature-icon {
     transform: scale(1.1);
+}
+
+.feature-chip {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #0d6efd;
+    background: #e8f1ff;
+    border: 1px solid #cfe0ff;
+    border-radius: 999px;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.feature-card:hover .feature-chip {
+    background: #0d6efd;
+    border-color: #0d6efd;
+    color: white;
 }
