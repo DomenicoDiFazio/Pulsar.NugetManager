@@ -123,7 +123,7 @@ h1:focus {
 }
 
 .data-table tbody tr:hover {
-    background-color: #fff7b2;
+    background-color: #b2caff;
     transition: background-color 0.15s ease;
 }
 

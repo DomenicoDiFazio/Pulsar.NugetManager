@@ -39,12 +39,6 @@
     margin-top: 15px;
 }
 
-
-.nav-item:hover {
-    background-color: #334155;
-    color: white;
-}
-
 .content {
     grid-area: content;
     min-width: 0;

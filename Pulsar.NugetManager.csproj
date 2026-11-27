@@ -5,7 +5,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
 
-	<Version>1.0.7</Version>
+	<Version>1.0.8</Version>
 	<FileVersion>$(Version)</FileVersion>
 	<PackageReleaseNotes>
 		20261123 Rel 1.0.0 Versione Iniziale
@@ -16,6 +16,7 @@
 		20261125 Rel 1.0.5 Aggiunta una card di evidenziazione del titolo di ciascuna sezione ed una immagine di sfondo nella home
 		20261126 Rel 1.0.6 Aggiunte alcune informazioni sulle tabelle dei risultati della sezione Package Upload
 		20261126 Rel 1.0.7 Risoluzione Bug: nella sezione Package Matching il match deve avvenire solo se Versione DLL == Versione Package e Nome DLL == Nome Package
+		20261127 Rel 1.0.8 Aggiunti miglioramenti grafici nel menù laterale sinistro e cambiato il font dei testi.
 	</PackageReleaseNotes>
 	  
   </PropertyGroup>
