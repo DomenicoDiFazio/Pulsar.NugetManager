@@ -170,3 +170,11 @@
 .navigation-menu ::deep .submenu-item.active .submenu-icon {
     opacity: 1;
 }
+
+/* ---------- Gruppo attivo (contiene la pagina corrente) ---------- */
+
+.menu-group.active-group {
+    color: white;
+    background-color: rgba(255, 255, 255, 0.06);
+    box-shadow: inset 3px 0 0 #0d6efd; /* stessa barretta blu delle voci attive */
+}

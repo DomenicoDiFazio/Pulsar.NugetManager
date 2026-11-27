@@ -1,5 +1,7 @@
 ﻿@inject NavigationManager Navigation
+@inject NavigationManager Navigation
 @inherits LayoutComponentBase
+@implements IDisposable
 @using System.Reflection
 
 <div class="layout-container">
@@ -28,7 +30,7 @@
                 <span>NuGet Package Creator</span>
             </NavLink>
 
-            <button class="menu-group"
+            <button class="menu-group @(IsInGroup(AzureRoutes) ? "active-group" : "")"
                     @onclick="ToggleAzureDevOps">
                 @(AzureDevOpsExpanded ? "▼" : "▶")
                 Azure DevOps
@@ -56,7 +58,7 @@
                 </div>
             }
 
-            <button class="menu-group"
+            <button class="menu-group @(IsInGroup(MigratorRoutes) ? "active-group" : "")"
                     @onclick="ToggleSolutionMigrator">
                 @(SolutionMigratorExpanded ? "▼" : "▶")
                 Solution Migrator
@@ -118,6 +120,40 @@
     private bool SolutionMigratorExpanded = true;
 
     private static readonly string AppVersion = GetAppVersion();
+
+    private static readonly string[] AzureRoutes =
+    ["azure-devops", "azure-artifacts", "package-upload"];
+
+    private static readonly string[] MigratorRoutes =
+        ["solution-analyzer", "package-matching", "migration-preview", "migration-engine"];
+
+    protected override void OnInitialized()
+    {
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        // se si arriva su una pagina di un gruppo chiuso (ad esempio dalle card della Home), lo apro
+        if (IsInGroup(AzureRoutes)) AzureDevOpsExpanded = true;
+        if (IsInGroup(MigratorRoutes)) SolutionMigratorExpanded = true;
+
+        InvokeAsync(StateHasChanged);
+    }
+
+    private bool IsInGroup(string[] routes)
+    {
+        var path = Navigation.ToBaseRelativePath(Navigation.Uri)
+                             .Split('?', '#')[0]
+                             .TrimEnd('/');
+
+        return routes.Contains(path, StringComparer.OrdinalIgnoreCase);
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+    }
 
     private void ToggleAzureDevOps()
     {
