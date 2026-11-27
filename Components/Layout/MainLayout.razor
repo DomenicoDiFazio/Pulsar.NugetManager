@@ -1,10 +1,18 @@
 ﻿@inject NavigationManager Navigation
-@inject NavigationManager Navigation
 @inherits LayoutComponentBase
 @implements IDisposable
 @using System.Reflection
 
-<div class="layout-container">
+<button type="button"
+        class="sidebar-toggle-btn @(_isSidebarCollapsed ? "collapsed" : "")"
+        @onclick="ToggleSidebar"
+        title="@(_isSidebarCollapsed ? "Mostra menu" : "Nascondi menu")"
+        aria-label="@(_isSidebarCollapsed ? "Mostra menu" : "Nascondi menu")"
+        aria-expanded="@(!_isSidebarCollapsed)">
+    @(_isSidebarCollapsed ? "☰" : "✕")
+</button>
+
+<div class="layout-container @(_isSidebarCollapsed ? "sidebar-collapsed" : "")">
 
     <aside class="sidebar">
 
@@ -97,10 +105,9 @@
 
     </aside>
 
-    <div class="content @(IsHomePage ? "content-home" : "content")">
+    <div class="content @(IsHomePage ? "content-home" : "")">
         @Body
     </div>
-
 
     <footer class="bottom-bar">
         © @DateTime.Now.Year Pulsar NuGet Manager — Developed by Domenico Di Fazio
@@ -116,6 +123,7 @@
 </div>
 
 @code {
+    private bool _isSidebarCollapsed = false;
 
     private bool AzureDevOpsExpanded = true;
 
@@ -124,19 +132,25 @@
     private static readonly string AppVersion = GetAppVersion();
 
     private static readonly string[] AzureRoutes =
-    ["azure-devops", "azure-artifacts", "package-upload"];
+        ["azure-devops", "azure-artifacts", "package-upload"];
 
     private static readonly string[] MigratorRoutes =
         ["solution-analyzer", "package-matching", "migration-preview", "migration-engine"];
+
+    private bool IsHomePage => string.IsNullOrWhiteSpace(Navigation.ToBaseRelativePath(Navigation.Uri));
 
     protected override void OnInitialized()
     {
         Navigation.LocationChanged += OnLocationChanged;
     }
 
+    private void ToggleSidebar()
+    {
+        _isSidebarCollapsed = !_isSidebarCollapsed;
+    }
+
     private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
     {
-        // se si arriva su una pagina di un gruppo chiuso (ad esempio dalle card della Home), lo apro
         if (IsInGroup(AzureRoutes)) AzureDevOpsExpanded = true;
         if (IsInGroup(MigratorRoutes)) SolutionMigratorExpanded = true;
 
@@ -178,12 +192,7 @@
         if (string.IsNullOrWhiteSpace(version))
             return assembly.GetName().Version?.ToString(3) ?? "?";
 
-        // Il SDK .NET 8+ aggiunge l'hash del commit (es. 1.0.1+a1b2c3): lo tolgo
         var plus = version.IndexOf('+');
         return plus >= 0 ? version[..plus] : version;
     }
-
-    @inject NavigationManager Navigation
-
-    private bool IsHomePage => string.IsNullOrWhiteSpace(Navigation.ToBaseRelativePath(Navigation.Uri));
 }
