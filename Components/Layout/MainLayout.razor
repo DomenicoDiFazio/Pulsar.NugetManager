@@ -32,8 +32,9 @@
 
             <button class="menu-group @(IsInGroup(AzureRoutes) ? "active-group" : "")"
                     @onclick="ToggleAzureDevOps">
-                @(AzureDevOpsExpanded ? "▼" : "▶")
-                Azure DevOps
+                <span class="menu-arrow">@(AzureDevOpsExpanded ? "▼" : "▶")</span>
+                <img class="nav-icon" src="images/icon-pubblica.png" alt="" />
+                <span>Azure DevOps</span>
             </button>
 
             @if (AzureDevOpsExpanded)
@@ -60,8 +61,9 @@
 
             <button class="menu-group @(IsInGroup(MigratorRoutes) ? "active-group" : "")"
                     @onclick="ToggleSolutionMigrator">
-                @(SolutionMigratorExpanded ? "▼" : "▶")
-                Solution Migrator
+                <span class="menu-arrow">@(SolutionMigratorExpanded ? "▼" : "▶")</span>
+                <img class="nav-icon" src="images/icon-migra.png" alt="" />
+                <span>Solution Migrator</span>
             </button>
 
             @if (SolutionMigratorExpanded)
